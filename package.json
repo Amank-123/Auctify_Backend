@@ -1,0 +1,33 @@
+{
+  "name": "biding-meow",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/amankumar213564-coder/biding-meow#readme",
+  "bugs": {
+    "url": "https://github.com/amankumar213564-coder/biding-meow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amankumar213564-coder/biding-meow.git"
+  },
+  "license": "ISC",
+  "author": "aman and gautam",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cloudinary": "^2.9.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0",
+    "multer": "^2.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.1"
+  }
+}
