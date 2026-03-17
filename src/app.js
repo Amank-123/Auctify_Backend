@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import userRouter from "./routes/user.route.js";
+import authRouter from "./routes/auth.route.js";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cookieParser());
 
 //Routes middlewares
 app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
 
 //All routes should be above the error handler middleware
 app.use(errorHandler);
