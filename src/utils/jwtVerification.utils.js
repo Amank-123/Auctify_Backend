@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const verifyAccessToken = function (token) {
     try {
-        return jwt.verify(token, process.ACCESS_TOKEN_SECRET);
+        return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     } catch (error) {
         throw error;
     }
@@ -11,7 +11,7 @@ const verifyAccessToken = function (token) {
 const verifyRefreshToken = function (token) {
     try {
         console.log("DECODE:", jwt.decode(token));
-        return jwt.verify(token, process.REFRESH_TOKEN_SECRET);
+        return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
         throw error;
     }
