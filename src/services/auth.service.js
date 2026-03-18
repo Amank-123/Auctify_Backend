@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 const loginUserDB = asyncHandler(async (email, password) => {
     const user = await User.findOne({ email }).select(
-        "+password, +refreshToken"
+        "+password +refreshToken"
     );
     if (!user) throw new ApiError(404, "User not found check email");
 

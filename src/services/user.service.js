@@ -1,7 +1,7 @@
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-const registerUserDB = asyncHandler(async (data) => {
+const registerUserDB = async (data) => {
     await User.create({
         username: data.username,
         email: data.email,
@@ -9,6 +9,6 @@ const registerUserDB = asyncHandler(async (data) => {
         refreshToken: "",
         address: data.address,
     });
-});
+};
 
 export { registerUserDB };

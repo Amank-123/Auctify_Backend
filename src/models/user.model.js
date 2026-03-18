@@ -42,7 +42,7 @@ const userSchema = new Schema(
 const tranformUser = function (doc, ret) {
     delete ret.password;
     delete ret.refreshToken;
-    delete ret._v;
+    delete ret.__v;
 
     return ret;
 };
@@ -50,7 +50,7 @@ const tranformUser = function (doc, ret) {
 userSchema.set("toJSON", { transform: tranformUser });
 
 userSchema.pre("save", async function (next) {
-    if (!this.ismodified("password")) return next();
+    if (!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 10);
 });
 
