@@ -32,21 +32,24 @@ const addressSchema = z.object({
 });
 
 const userRegisterSchema = z.object({
-    body: z.object({
-        username: z
-            .string()
-            .trim()
-            .regex(/^\S+$/, "Username must not contain spaces")
-            .lowercase()
-            .min(3, "Full name should be more than 3 characters")
-            .max(20, "Full name should be less than 20 characters"),
-        email: z.email("Invalid email format").lowercase(),
-        password: z
-            .string()
-            .min(8, "Password must contain atleast 8 characters")
-            .max(50, "Password can't be greater than 50 characters"),
-        address: addressSchema.optional(),
-    }),
+    body: z
+        .object({
+            username: z
+                .string({ required_error: "Username is required" })
+                .trim()
+                .regex(/^\S+$/, "Username must not contain spaces")
+                .toLowerCase()
+                .min(3, "Full name should be more than 3 characters")
+                .max(20, "Full name should be less than 20 characters"),
+            email: z.email("Invalid email format").toLowerCase(),
+            password: z
+                .string({ required_error: "Password is required" })
+                .trim()
+                .min(8, "Password must contain atleast 8 characters")
+                .max(50, "Password can't be greater than 50 characters"),
+            address: addressSchema.optional(),
+        })
+        .strict(),
 });
 
 const updateUserSchema = z.object({
