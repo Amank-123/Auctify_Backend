@@ -1,6 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
 import { loginUserDB } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
 
@@ -59,7 +58,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, { $set: { refreshToken: "" } });
-    console.log(req.user._id);
+
     return res
         .status(200)
         .clearCookie("accessToken")

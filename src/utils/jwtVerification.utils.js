@@ -10,7 +10,6 @@ const verifyAccessToken = function (token) {
 
 const verifyRefreshToken = function (token) {
     try {
-        console.log("DECODE:", jwt.decode(token));
         return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
         throw error;
