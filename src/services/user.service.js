@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const registerUserDB = async (data) => {
     await User.create({
@@ -11,4 +12,15 @@ const registerUserDB = async (data) => {
     });
 };
 
-export { registerUserDB };
+const updateUserDB = async (userId, payload) => {
+    const updatedUser = User.findByIdAndUpdate(
+        userId,
+        { $set: { payload } },
+        { returnDocument: "after", runValidators: true }
+    );
+    if (!updatedUser) throw new ApiError(404, "User not found");
+
+    return updatedUser;
+};
+
+export { registerUserDB, updateUserDB };
