@@ -4,6 +4,7 @@ import express from "express";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
+import passport from "passport";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(passport.initialize());
 
 //Routes middlewares
 app.use("/api/user", userRouter);

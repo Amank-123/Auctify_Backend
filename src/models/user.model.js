@@ -19,10 +19,20 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: true,
             select: false,
+            required: function () {
+                return !(this.googleId || this.githubId);
+            },
         },
         refreshToken: {
+            type: String,
+            select: false,
+        },
+        googleId: {
+            type: String,
+            select: false,
+        },
+        githubId: {
             type: String,
             select: false,
         },
