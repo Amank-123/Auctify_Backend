@@ -11,11 +11,17 @@ const registerUserDB = async (data) => {
     });
 };
 
+const getUserDB = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) throw new ApiError(404, "User not found");
+
+    return user;
+};
+
 const updateUserDB = async (userId, payload) => {
-    console.log(payload)
-    const updatedUser = User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { $set:  payload  },
+        { $set: payload },
         { returnDocument: "after", runValidators: true }
     );
     if (!updatedUser) throw new ApiError(404, "User not found");
@@ -23,4 +29,9 @@ const updateUserDB = async (userId, payload) => {
     return updatedUser;
 };
 
-export { registerUserDB, updateUserDB };
+const deleteUserDB = async (userId) => {
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) throw new ApiError(404, "User not found");
+    return deletedUser;
+};
+export { registerUserDB, updateUserDB, deleteUserDB, getUserDB };
