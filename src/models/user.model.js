@@ -1,12 +1,25 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { minLength } from "zod";
 
 const userSchema = new Schema(
     {
         username: {
             type: String,
-            required: true,
+            unique:true,
+            trim: true,
+        },
+        firstName: {
+            type: String,
+            minlength: [3, "Name must be at least 3 characters"],
+            maxlength: [20, "Name cannot exceed 20 characters"],
+            trim: true,
+        },
+        lastName: {
+            type: String,
+            minlength: [3, "Last Name must be at least 3 characters"],
+            maxlength: [20, "Last Name cannot exceed 20 characters"],
             trim: true,
         },
         email: {
@@ -20,15 +33,15 @@ const userSchema = new Schema(
         password: {
             type: String,
             select: false,
-            required: function (){
-                return !(this.googleId || this.githubId)
+            required: function () {
+                return !(this.googleId || this.githubId);
             },
         },
         refreshToken: {
             type: String,
             select: false,
         },
-        googleId:  {
+        googleId: {
             type: String,
             select: false,
         },

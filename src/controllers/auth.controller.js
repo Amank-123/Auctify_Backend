@@ -69,4 +69,21 @@ const logoutUser = asyncHandler(async (req, res) => {
         });
 });
 
-export { loginUser, refreshAccessToken, logoutUser };
+const oauthCallback = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken)
+        .cookie("refreshToken", refreshToken)
+        .json({
+            success: true,
+            message: "Authentication successfully done",
+        });
+});
+export { loginUser, refreshAccessToken, logoutUser, oauthCallback };
