@@ -31,7 +31,7 @@ passport.use(
         {
             clientID: process.env.GIT_CLIENT_ID,
             clientSecret: process.env.GIT_CLIENT_SECRET,
-            callbackURL: "/auth/github/callback",
+            callbackURL: "api/auth/github/callback",
         },
 
         async (_, __, profile, done) => {
