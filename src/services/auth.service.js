@@ -25,7 +25,7 @@ const findOrCreateOAuthUser = async (profile) => {
 
     if (user) return user;
 
-    const existingUser = await User.findOne({email});
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
         existingUser.googleId = profile.id;
@@ -46,7 +46,7 @@ const findOrCreateGithubUser = async (profile) => {
 
     if (user) return user;
 
-    const existingUser = await User.findOne({email});
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
         existingUser.githubId = profile.id;
@@ -54,13 +54,8 @@ const findOrCreateGithubUser = async (profile) => {
         return existingUser;
     }
 
-    if(email){ return await User.create({
-        email,
-        githubId: profile.id,
-    });}
-
     return await User.create({
-        username: profile.username,
+        email,
         githubId: profile.id,
     });
 };
