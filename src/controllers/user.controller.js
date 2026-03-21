@@ -10,7 +10,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const updateUser = asyncHandler(async (req, res) => {
     const data = await updateUserDB(req.user._id, req.body);
-    if (!updatedUser) throw new ApiError(500, "Unable to update user data");
+    if (!data) throw new ApiError(500, "Unable to update user data");
 
     return ApiResponse(res, 200, "User updated successfully", data);
 });

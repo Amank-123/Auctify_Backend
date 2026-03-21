@@ -1,5 +1,4 @@
 import { User } from "../models/user.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const registerUserDB = async (data) => {
@@ -13,9 +12,10 @@ const registerUserDB = async (data) => {
 };
 
 const updateUserDB = async (userId, payload) => {
+    console.log(payload)
     const updatedUser = User.findByIdAndUpdate(
         userId,
-        { $set: { payload } },
+        { $set:  payload  },
         { returnDocument: "after", runValidators: true }
     );
     if (!updatedUser) throw new ApiError(404, "User not found");
