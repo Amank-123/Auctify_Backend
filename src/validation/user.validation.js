@@ -39,8 +39,18 @@ const userRegisterSchema = z.object({
                 .trim()
                 .regex(/^\S+$/, "Username must not contain spaces")
                 .toLowerCase()
-                .min(3, "Full name should be more than 3 characters")
-                .max(20, "Full name should be less than 20 characters"),
+                .min(3, "username should be more than 3 characters")
+                .max(20, "username should be less than 20 characters"),
+            firstName: z
+                .string()
+                .min(3, "First name should be more than 3 characters")
+                .max(20, "First name should be less than 20 characters")
+                .optional(),
+            lastName: z
+                .string()
+                .min(3, "Last name should be more than 3 characters")
+                .max(20, "Last name should be less than 20 characters")
+                .optional(),
             email: z.email("Invalid email format").toLowerCase(),
             password: z
                 .string({ required_error: "Password is required" })
@@ -64,7 +74,16 @@ const updateUserSchema = z.object({
                 .max(20, "Full name should be less than 20 characters")
                 .optional(),
             email: z.email("Invalid email format").lowercase().optional(),
-
+            firstName: z
+                .string()
+                .min(3, "First name should be more than 3 characters")
+                .max(20, "First name should be less than 20 characters")
+                .optional(),
+            lastName: z
+                .string()
+                .min(3, "Last name should be more than 3 characters")
+                .max(20, "Last name should be less than 20 characters")
+                .optional(),
             address: addressSchema.partial().optional(),
         })
         .refine(
