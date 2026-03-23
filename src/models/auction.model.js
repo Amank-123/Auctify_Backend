@@ -65,7 +65,7 @@ const auctionSchema = new Schema(
             type: [String],
             validate: {
                 validator: (arr) => arr.length <= 10,
-                message: "You can upload up to 5 media files only",
+                message: "You can upload up to  media files only",
             },
         },
 
@@ -97,7 +97,7 @@ auctionSchema.index({ sellerId: 1 });
 auctionSchema.index({ winnerId: 1 });
 
 auctionSchema.methods.isActive = function () {
-    return this.status === "active" && !this.endTime;
+    return this.status === "active" && !this.endedTime;
 };
 
 auctionSchema.statics.findActiveAuctions = function () {

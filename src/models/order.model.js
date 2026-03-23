@@ -41,12 +41,12 @@ const orderSchema = new Schema(
         },
         buyerId: {
             type: Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
             required: true,
         },
         sellerId: {
             type: Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
             required: true,
         },
         shippingAddress: {
@@ -55,12 +55,6 @@ const orderSchema = new Schema(
             state: String,
             country: String,
             pin: String,
-        },
-        sellerId: {
-            type: Schema.Types.ObjectId,
-            ref: "Payment",
-            required: true,
-            unique: true,
         },
     },
     {
