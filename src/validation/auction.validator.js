@@ -86,4 +86,27 @@ const auctionValidator = z
         }
     );
 
-export { auctionValidator };
+const updateAuctionValidator = z
+    .object({
+        name: z
+            .string()
+            .min(5, "Name must be at least 5 characters")
+            .max(50, "Name cannot exceed 50 characters")
+            .trim()
+            .optional(),
+
+        description: z.string().max(500, "Description too long").optional(),
+
+        startPrice: z.coerce
+            .number()
+            .min(1000, "Minimum amount should be at least 1000")
+            .optional(),
+
+        media: z
+            .array(z.string().url("Media must be valid URL"))
+            .max(10, "Max 10 media files")
+            .optional(),
+    })
+    .strict(); // blocks any other fields
+
+export { auctionValidator, updateAuctionValidator };

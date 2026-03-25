@@ -4,6 +4,7 @@ import express from "express";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
+import orderRouter from "./routes/order.route.js";
 import passport from "passport";
 
 const app = express();
@@ -18,7 +19,7 @@ app.use(passport.initialize());
 //Routes middlewares
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
-
+app.use("/api/order", orderRouter);
 //All routes should be above the error handler middleware
 app.use(errorHandler);
 export { app };
