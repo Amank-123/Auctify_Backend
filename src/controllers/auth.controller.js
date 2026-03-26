@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { loginUserDB } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
+import { verifyRefreshToken } from "../utils/jwtVerification.utils.js";
 
 const options = {
     httpOnly: true,
@@ -31,7 +32,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const token = req.cookies("refreshToken");
+    const token = req.cookies.refreshToken;
     if (!token) throw new ApiError(401, "Unauthroized access token not found");
 
     const decoded = verifyRefreshToken(token);

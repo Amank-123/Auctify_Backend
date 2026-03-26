@@ -11,7 +11,6 @@ const paymentSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Order",
             required: true,
-            unique: true,
         },
 
         status: {

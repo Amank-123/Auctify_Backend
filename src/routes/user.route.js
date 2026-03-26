@@ -13,8 +13,10 @@ import {
 } from "../validation/user.validation.js";
 const router = Router();
 
-router.route("/").get(protect, getUser);
-router.route("/register").post(validateData(userRegisterSchema), registerUser);
+router
+    .route("/")
+    .get(protect, getUser)
+    .post(validateData(userRegisterSchema), registerUser);
 router
     .route("/update")
     .post(protect, validateData(updateUserSchema), updateUser);

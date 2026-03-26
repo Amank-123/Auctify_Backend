@@ -2,16 +2,30 @@ import { Auction } from "../models/auction.model.js";
 import { Bid } from "../models/bid.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
+import { runTransaction } from "../utils/transaction.js";
 
-const createAuctionDB = async (auctionData) => {
-    const auction = await Auction.create(auctionData);
+const createAuctionDB = async (auctionData, sellerId) => {
+    const auction = await Auction.create({
+        name: auctionData.name,
+        description: auctionData.description,
+        startPrice: auctionData.startPrice,
+        currentHighestBid: 0,
+        bidCount: 0,
+        status: "draft",
+        startTime: auctionData.startTime,
+        endedTime: undefined,
+        media: auctionData.media,
+        sellerId: sellerId,
+        highestBidId: undefined,
+        winnerId: undefined,
+    });
 
     return auction;
 };
 
 const getAllAuctionsDB = async (filters, options) => {
     const { status, minPrice, maxPrice, sellerId, search } = filters;
-    const { page, limit, order = "des", sortBy = "createdAt" } = options;
+    const { page, limit, order, sortBy } = options;
 
     const skip = (page - 1) * limit;
 
@@ -23,8 +37,13 @@ const getAllAuctionsDB = async (filters, options) => {
 
     if (minPrice || maxPrice) {
         match.currentHighestBid = {};
-        match.currentHighestBid.$gte = minPrice;
-        match.currentHighestBid.$lt = maxPrice;
+        if (minPrice !== undefined) {
+            match.currentHighestBid.$gte = minPrice;
+        }
+
+        if (maxPrice !== undefined) {
+            match.currentHighestBid.$lte = maxPrice;
+        }
     }
 
     if (search) match.name = { $regex: search, $options: "i" };
@@ -34,7 +53,7 @@ const getAllAuctionsDB = async (filters, options) => {
             $match: match,
         },
         {
-            $sort: { [sortBy]: order === "asd" ? 1 : -1 },
+            $sort: { [sortBy]: order === "asc" ? 1 : -1 },
         },
         {
             $skip: skip,
@@ -48,7 +67,7 @@ const getAllAuctionsDB = async (filters, options) => {
 };
 
 const getsellerAuctionsDB = async (userId) => {
-    const auctions = await Auction.findAll({ sellerId: userId });
+    const auctions = await Auction.find({ sellerId: userId });
 
     return auctions;
 };
@@ -62,7 +81,6 @@ const getAuctionByIdDB = async (auctionId) => {
 const getActiveAuctionsDB = async () => {
     const activeAuctions = await Auction.find({
         status: "active",
-        startTime: { $gte: new Date() },
     });
 
     return activeAuctions;
@@ -99,20 +117,38 @@ const startAuctionDB = async (auctionId, userId) => {
 };
 
 const endAuctionDB = async (auctionId, userId) => {
-    const auction = await Auction.findOne({
-        _id: auctionId,
-        sellerId: userId,
+    return await runTransaction(async (session) => {
+        const auction = await Auction.findOne({
+            _id: auctionId,
+            sellerId: userId,
+            status: "active",
+        }).session(session);
+
+        if (!auction) {
+            throw new ApiError(404, "Auction not found");
+        }
+
+        if (auction.status !== "active") {
+            throw new ApiError(400, "Auction is not active");
+        }
+        auction.endedTime = new Date();
+
+        const highestBid = await Bid.findById(auction.highestBidId).session(
+            session
+        );
+
+        if (!highestBid) {
+            auction.status = "expired"; // or expired
+
+            await auction.save({ session });
+            return auction;
+        }
+        auction.winnerId = highestBid.userId;
+        auction.status = "ended";
+
+        await auction.save({ session });
+        return auction;
     });
-
-    const highestBid = await Bid.findById(auction.highestBidId);
-
-    auction.winnerId = highestBid.userId;
-
-    auction.endedTime = new Date();
-
-    auction.save();
-
-    return auction;
 };
 
 export {

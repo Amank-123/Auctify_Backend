@@ -1,11 +1,13 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import passport from "passport";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 import orderRouter from "./routes/order.route.js";
-import passport from "passport";
+import auctionRouter from "./routes/auction.route.js";
+import paymentRouter from "./routes/payment.route.js";
 
 const app = express();
 
@@ -19,7 +21,9 @@ app.use(passport.initialize());
 //Routes middlewares
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/auction", auctionRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/payment", paymentRouter);
 //All routes should be above the error handler middleware
 app.use(errorHandler);
 export { app };
