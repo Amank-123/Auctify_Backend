@@ -79,9 +79,7 @@ const getAuctionByIdDB = async (auctionId) => {
 };
 
 const getActiveAuctionsDB = async () => {
-    const activeAuctions = await Auction.find({
-        status: "active",
-    });
+    const activeAuctions = await Auction.findActiveAuctions();
 
     return activeAuctions;
 };
@@ -128,7 +126,7 @@ const endAuctionDB = async (auctionId, userId) => {
             throw new ApiError(404, "Auction not found");
         }
 
-        if (auction.status !== "active") {
+        if (!auction.isActive()) {
             throw new ApiError(400, "Auction is not active");
         }
         auction.endedTime = new Date();
