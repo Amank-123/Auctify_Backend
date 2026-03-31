@@ -1,11 +1,11 @@
 import { Otp } from "../models/otp.model.js";
 import bcrypt from "bcrypt";
-import { sendEmail } from "../utils/sendEmail.js";
+import { sendEmail } from "../utils/otp.js";
 
 const generateOtp = async () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
-const sendOtp = async (email) => {
+const sendOtpDB = async (email) => {
     const otp = generateOtp();
     const hashedOtp = await bcrypt.hash(otp, 10);
 
@@ -18,7 +18,7 @@ const sendOtp = async (email) => {
     await sendEmail(email, otp);
 };
 
-const verifyOtp = async (email, otp) => {
+const verifyOtpDB = async (email, otp) => {
     const record = await Otp.findOne({ email });
     if (!record) throw new ApiError("OTP not found");
     if (record.expiresAt < Date.now()) throw new ApiError("OTP not found");
@@ -28,4 +28,4 @@ const verifyOtp = async (email, otp) => {
     await OTP.deleteMany({ email });
 };
 
-export { sendOtp, verifyOtp };
+export { verifyOtpDB, sendOtpDB };

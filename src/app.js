@@ -9,6 +9,7 @@ import orderRouter from "./routes/order.route.js";
 import auctionRouter from "./routes/auction.route.js";
 import bidRouter from "./routes/bid.route.js";
 import paymentRouter from "./routes/payment.route.js";
+import OTPRouter from "./routes/otp.route.js";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/auction", auctionRouter);
 app.use("/api/bid", bidRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/payment", paymentRouter);
+app.use("/api/otp", OTPRouter);
 //All routes should be above the error handler middleware
 app.use(errorHandler);
 export { app };
