@@ -12,11 +12,7 @@ const resendOTP = asyncHandler(async (req, res) => {
 const verifyOTP = asyncHandler(async (req, res) => {
     const { email, otp } = req.body;
 
-    await verifyOTPService(email, otp);
-
-    const user = await User.findOne({ email });
-    user.isVerified = true;
-    await user.save();
+    await verifyOtpDB(email, otp);
 
     res.json({ message: "Email verified" });
 });

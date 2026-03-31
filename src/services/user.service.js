@@ -1,11 +1,13 @@
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { sendOtpDB } from "../services/otp.service.js";
 
 const registerUserDB = async (data) => {
     const user = await User.create({
         ...data,
         isVerified: false,
     });
+    await sendOtpDB(user.email);
     return user;
 };
 
