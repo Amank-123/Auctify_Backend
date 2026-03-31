@@ -7,6 +7,7 @@ import {
     deleteBidDB,
     highestUserBidDB,
 } from "../services/bid.service.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -16,11 +17,15 @@ const createBid = asyncHandler(async (req, res) => {
         req.user._id,
         req.body.amount
     );
+
+    if (!data) throw new ApiError(500, "Bid failed");
+
     ApiResponse(res, 201, "Bid created successfully !!!", data);
 });
 
 const highestBid = asyncHandler(async (req, res) => {
     const data = await highestBidDB(req.params.auctionId);
+
     ApiResponse(res, 200, "Highest bid fetched successfully !!!", data);
 });
 

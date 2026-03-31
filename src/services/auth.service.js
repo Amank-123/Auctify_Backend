@@ -6,6 +6,8 @@ const loginUserDB = async (email, password) => {
     );
     if (!user) throw new Error(404, "User not found check email");
 
+    if (!user.isVerified) throw new ApiError(403, "Verify your email first");
+
     const isValid = await user.comparePassword(password);
     if (!isValid) throw new Error(401, "Incorrect Credentials");
 

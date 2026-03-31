@@ -1,13 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { minLength } from "zod";
 
 const userSchema = new Schema(
     {
         username: {
             type: String,
-            unique:true,
+            unique: true,
             trim: true,
         },
         firstName: {
@@ -55,6 +54,9 @@ const userSchema = new Schema(
             state: String,
             country: String,
             pin: String,
+        },
+        isVerified: {
+            type: Boolean,
         },
     },
     {

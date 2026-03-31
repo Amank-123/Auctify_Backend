@@ -1,5 +1,5 @@
 import express from "express";
-import { protect, isAdmin } from "../middlewares/auth.middleware.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
 import {
     createBid,

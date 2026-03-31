@@ -2,7 +2,11 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const registerUserDB = async (data) => {
-    await User.create(data);
+    const user = await User.create({
+        ...data,
+        isVerified: false,
+    });
+    return user;
 };
 
 const getUserDB = async (userId) => {

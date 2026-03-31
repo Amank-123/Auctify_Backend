@@ -73,7 +73,7 @@ const getsellerAuctionsDB = async (userId) => {
 };
 
 const getAuctionByIdDB = async (auctionId) => {
-    const auction = await Auction.findById(auctionId);
+    const auction = await Auction.findById(auctionId).populate("highestBidId");
 
     return auction;
 };
