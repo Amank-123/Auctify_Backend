@@ -10,7 +10,24 @@ const createPaymentDB = async (data, userId) => {
     if (!order) throw new ApiError(403, "Order not found");
     data.userId = userId;
 
-    return await Payment.create(data);
+    // 🔥 create razorpay order
+    const razorOrder = await razorpay.orders.create({
+        amount: order.totalAmount * 100, // paisa
+        currency: "INR",
+        receipt: order._id.toString(),
+    });
+
+    const rzrPay = await Payment.create({
+        userId,
+        orderId,
+        amount: order.totalAmount,
+        status: "pending",
+        gateway: {
+            name: "razorpay",
+            transactionId: razorOrder.id,
+        },
+    });
+    return { payment, rzrPay };
 };
 
 /** For Admin */

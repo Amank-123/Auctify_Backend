@@ -2,6 +2,7 @@ import { Bid } from "../models/bid.model.js";
 import { Auction } from "../models/auction.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { runTransaction } from "../utils/transaction.js";
+import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
 
 const createBidDB = async (auctionId, userId, amount) => {
     if (!mongoose.Types.ObjectId.isValid(auctionId))
@@ -14,10 +15,12 @@ const createBidDB = async (auctionId, userId, amount) => {
                 status: "active",
                 sellerId: { $ne: userId },
                 currentHighestBid: { $lt: amount },
+                countdownEnd: { $lte: new Date() },
             },
             {
                 $set: {
                     currentHighestBid: amount,
+                    countdownEnd: new Date(Date.now() + 30 * 1000),
                 },
                 $inc: { bidCount: 1 },
             },
@@ -33,6 +36,8 @@ const createBidDB = async (auctionId, userId, amount) => {
             amount,
         });
         await bid.save({ session });
+
+        await scheduleAuctionEnd(auction._id, auction.countdownEnd);
 
         auction.highestBidId = bid._id;
 

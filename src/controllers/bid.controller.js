@@ -33,6 +33,7 @@ const highestUserBid = asyncHandler(async (req, res) => {
     const data = await highestUserBidDB(req.user._id, req.params.auctionId);
     ApiResponse(res, 200, "Highest user bid fetched successfully !!!", data);
 });
+
 const deleteBid = asyncHandler(async (req, res) => {
     const data = await deleteBidDB(req.params.bidId);
     ApiResponse(res, 200, "Bid deleted successfully !!!", data);

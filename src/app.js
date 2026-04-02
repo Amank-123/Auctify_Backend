@@ -28,6 +28,7 @@ app.use("/api/bid", bidRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/otp", OTPRouter);
+
 //All routes should be above the error handler middleware
 app.use(errorHandler);
 export { app };

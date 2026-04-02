@@ -27,7 +27,9 @@ const auctionSchema = new Schema(
             default: 0,
             min: [0, "Bid cannot be negative"],
         },
-
+        countdownEnd: {
+            type: Date,
+        },
         bidCount: {
             type: Number,
             default: 0,

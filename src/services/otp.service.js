@@ -10,7 +10,7 @@ const generateOtp = () =>
 const sendOtpDB = async (email) => {
     const otp = generateOtp();
     const hashedOtp = await bcrypt.hash(otp, 10);
-    console.log(hashedOtp);
+    // console.log(hashedOtp);
     await Otp.deleteMany({ email });
     await Otp.create({
         email,

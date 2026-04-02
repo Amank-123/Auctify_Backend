@@ -114,11 +114,10 @@ const startAuctionDB = async (auctionId, userId) => {
     return auction;
 };
 
-const endAuctionDB = async (auctionId, userId) => {
+const endAuctionDB = async (auctionId) => {
     return await runTransaction(async (session) => {
         const auction = await Auction.findOne({
             _id: auctionId,
-            sellerId: userId,
             status: "active",
         }).session(session);
 
