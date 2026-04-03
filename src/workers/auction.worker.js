@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import { endAuctionDB } from "../services/auction.service.js";
-import { redisconnection } from "../config/redis";
+import { redisconnection } from "../config/redis.js";
 
 const worker = new Worker(
     "auctionQueue",

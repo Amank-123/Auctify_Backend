@@ -1,9 +1,9 @@
-// import "dotenv/config";
-
+// import dotenv from "dotenv";
+// dotenv.config();
 import { app } from "./app.js";
 import connectDB from "./config/database.js";
 const Port = process.env.PORT;
-
+console.log("redis", process.env.REDIS_HOST);
 connectDB()
     .then(() => {
         app.listen(Port, () => {

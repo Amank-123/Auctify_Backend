@@ -1,0 +1,49 @@
+# dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# build output
+dist
+build
+.next
+out
+coverage
+
+# env files (don’t leak secrets unless you enjoy chaos)
+.env
+.env.*
+!.env.example
+
+# logs
+logs
+*.log
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# git
+.git
+.gitignore
+
+# docker (yes, ignore your ignore file too, poetic)
+Dockerfile
+.dockerignore
+
+# temp files
+tmp
+temp
+*.tmp
+
+# tests
+__tests__
+*.test.js
+*.spec.js
+
+# misc
+*.md
