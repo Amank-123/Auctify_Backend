@@ -7,6 +7,7 @@ import {
     cancelPayment,
     refundPayment,
     updatePaymentStatus,
+    verifyPayment,
 } from "../controllers/payment.controller.js";
 
 import { protect } from "../middlewares/auth.middleware.js";
@@ -30,5 +31,6 @@ router.route("/status/:payId").patch(protect, updatePaymentStatus);
 
 // "/refund/:payId"
 router.route("/refund/:payId").patch(protect, refundPayment);
+router.post("/verify", protect, verifyPayment);
 
 export default router;

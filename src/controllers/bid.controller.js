@@ -13,7 +13,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createBid = asyncHandler(async (req, res) => {
     const data = await createBidDB(
-        req.params.auctionId,
+        req.body.auctionId,
         req.user._id,
         req.body.amount
     );

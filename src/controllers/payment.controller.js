@@ -6,6 +6,7 @@ import {
     cancelPaymentDB,
     refundPaymentDB,
     updatePaymentStatusDB,
+    verifyPaymentDB,
 } from "../services/payment.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -50,6 +51,11 @@ const updatePaymentStatus = asyncHandler(async (req, res) => {
     ApiResponse(res, 200, "payment status updated successfully", payment);
 });
 
+const verifyPayment = asyncHandler(async (req, res) => {
+    const payment = await verifyPaymentDB(req.body);
+    ApiResponse(res, 200, "Payment verified", payment);
+});
+
 export {
     createPayment,
     allPayment,
@@ -58,4 +64,5 @@ export {
     cancelPayment,
     refundPayment,
     updatePaymentStatus,
+    verifyPayment,
 };

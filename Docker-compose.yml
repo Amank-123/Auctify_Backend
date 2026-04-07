@@ -28,3 +28,18 @@ services:
       EMAIL_PASS: mgaaoneumljicmqs
       RAZORPAY_KEY_ID: rzp_test_SY6Fcu1ohD0BDI
       RAZORPAY_KEY_SECRET: dTKZ0bdCxt2LOaJuM5RR7E63
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  worker:
+    build: .
+    command: node src/workers/auction.worker.js
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://gautamwecodepros_db_user:Rf3fLRhjbIiRdnu4@ac-bqm04il-shard-00-00.awmn6t4.mongodb.net:27017,ac-bqm04il-shard-00-01.awmn6t4.mongodb.net:27017,ac-bqm04il-shard-00-02.awmn6t4.mongodb.net:27017/Bid_Meow?ssl=true&replicaSet=atlas-gkcwaq-shard-0&authSource=admin&appName=Cluster0
+    volumes:
+      - .:/app
+      - /app/node_modules

@@ -1,3 +1,5 @@
+import connectDB from "../config/database.js";
+await connectDB();
 import { Worker } from "bullmq";
 import { endAuctionDB } from "../services/auction.service.js";
 import { redisconnection } from "../config/redis.js";
