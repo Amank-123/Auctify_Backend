@@ -35,29 +35,39 @@ const verifyPaymentDB = async (data) => {
 
 /** Create payment */
 const createPaymentDB = async (data, userId) => {
-    const paymentExists = await Payment.findOne({ orderId: data.orderId });
-    if (paymentExists) throw new ApiError(403, "payment already exists");
-    const order = await Order.findById(data.orderId);
-    if (!order) throw new ApiError(403, "Order not found");
-    data.userId = userId;
+    try {
+        console.log("data obj", data);
+        const paymentExists = await Payment.findOne({ orderId: data.orderId });
+        if (paymentExists) throw new ApiError(403, "payment already exists");
 
-    const razorOrder = await razorpay.orders.create({
-        amount: order.totalAmount * 100,
-        currency: "INR",
-        receipt: order._id.toString(),
-    });
+        const order = await Order.findById(data.orderId);
+        console.log("order onj:", order);
+        if (!order) throw new ApiError(403, "Order not found");
+        // ✅ Create Razorpay order
+        const razorOrder = await razorpay.orders.create({
+            amount: order.finalPrice * 100,
+            currency: "INR",
+            receipt: order._id.toString(),
+        });
 
-    const rzrPay = await Payment.create({
-        userId,
-        orderId: data.orderId,
-        amount: order.totalAmount,
-        status: "pending",
-        gateway: {
-            name: "razorpay",
-            transactionId: razorOrder.id,
-        },
-    });
-    return { razorOrder, rzrPay };
+        // ✅ Create payment in DB
+        const rzrPay = await Payment.create({
+            userId,
+            orderId: data.orderId,
+            amount: order.finalPrice,
+            paymentMethod: data.paymentMethod, // 🔥 REQUIRED
+            status: "pending",
+            gateway: {
+                name: "razorpay",
+                transactionId: razorOrder.id,
+            },
+        });
+
+        return { rzrPay, razorOrder };
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
 };
 
 /** For Admin */

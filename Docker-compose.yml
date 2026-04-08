@@ -26,8 +26,11 @@ services:
       GIT_CLIENT_SECRET: 53c654839a51ba22be123f71f1a81a9a0f6ce625
       EMAIL_USER: amankumar213564@gmail.com
       EMAIL_PASS: mgaaoneumljicmqs
-      RAZORPAY_KEY_ID: rzp_test_SY6Fcu1ohD0BDI
-      RAZORPAY_KEY_SECRET: dTKZ0bdCxt2LOaJuM5RR7E63
+      RAZORPAY_KEY_ID: rzp_test_Sat4yt48jK6UN0
+      RAZORPAY_KEY_SECRET: USJp62cJUniMiwkKXJ6N3Fh5
+      CLOUDINARY_CLOUD_NAME: dvhc5ay3t
+      CLOUDINARY_API_KEY: 256435719362694
+      CLOUDINARY_API_SECRET: 256435719362694
     volumes:
       - .:/app
       - /app/node_modules

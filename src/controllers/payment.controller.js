@@ -9,11 +9,12 @@ import {
     verifyPaymentDB,
 } from "../services/payment.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createPayment = asyncHandler(async (req, res) => {
     const payment = await createPaymentDB(req.body, req.user._id);
+    // console.log("USER:", req.user);
+    // console.log("USER:", req.body);
     ApiResponse(res, 200, "payment created successfully", payment);
 });
 
