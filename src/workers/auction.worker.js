@@ -2,7 +2,7 @@ import connectDB from "../config/database.js";
 await connectDB();
 import { Worker } from "bullmq";
 import { endAuctionDB } from "../services/auction.service.js";
-import { redisconnection } from "../config/redis.js";
+import { RedisClient } from "../config/redis.js";
 
 const worker = new Worker(
     "auctionQueue",
@@ -12,7 +12,7 @@ const worker = new Worker(
         await endAuctionDB(auctionId);
     },
     {
-        connection: redisconnection,
+        connection: RedisClient,
     }
 );
 

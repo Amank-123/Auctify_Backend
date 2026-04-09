@@ -12,31 +12,41 @@ import {
     updateOrder,
     singleOrder,
 } from "../controllers/order.controller.js";
+import { protectedApiLimiter } from "../limiters/protectedApi.limiter.js";
 const router = express.Router();
 
 // Create order + get all orders (admin)
-router.route("/").post(protect, createOrder).get(protect, allOrders);
+router
+    .route("/")
+    .post(protect, protectedApiLimiter, createOrder)
+    .get(protect, protectedApiLimiter, allOrders);
 
 // Buyer orders
-router.route("/my").get(protect, buyerOrders);
+router.route("/my").get(protect, protectedApiLimiter, buyerOrders);
 
 // Seller orders
-router.route("/seller").get(protect, sellerOrders);
+router.route("/seller").get(protect, protectedApiLimiter, sellerOrders);
 
 // Single order + update + delete
 router
     .route("/:id")
-    .get(protect, singleOrder)
-    .patch(protect, updateOrder)
-    .delete(protect, deleteOrderById);
+    .get(protect, protectedApiLimiter, singleOrder)
+    .patch(protect, protectedApiLimiter, updateOrder)
+    .delete(protect, protectedApiLimiter, deleteOrderById);
 
 // Update order status
-router.route("/status/:orderId").patch(protect, updateOrderStatus);
+router
+    .route("/status/:orderId")
+    .patch(protect, protectedApiLimiter, updateOrderStatus);
 
 // Update payment status
-router.route("/payment/:orderId").patch(protect, updatePaymentStatus);
+router
+    .route("/payment/:orderId")
+    .patch(protect, protectedApiLimiter, updatePaymentStatus);
 
 // Cancel order
-router.route("/cancel/:orderId").patch(protect, cancelOrder);
+router
+    .route("/cancel/:orderId")
+    .patch(protect, protectedApiLimiter, cancelOrder);
 
 export default router;

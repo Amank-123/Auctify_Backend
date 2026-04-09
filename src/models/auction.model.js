@@ -63,13 +63,15 @@ const auctionSchema = new Schema(
             type: Date,
         },
 
-        media: {
-            type: [String],
-            validate: {
-                validator: (arr) => arr.length <= 10,
-                message: "You can upload up to  media files only",
+        media: [
+            {
+                type: [String],
+                validate: {
+                    validator: (arr) => arr.length <= 10,
+                    message: "You can upload up to  media files only",
+                },
             },
-        },
+        ],
 
         sellerId: {
             type: Schema.Types.ObjectId,

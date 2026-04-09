@@ -1,12 +1,10 @@
-version: "3.8"
-
 services:
   redis:
     image: redis:latest
     restart: always
 
   backend:
-    image: micemind/bidding_meow
+    build: .
     ports:
       - "5000:5000"
     depends_on:
@@ -30,7 +28,8 @@ services:
       RAZORPAY_KEY_SECRET: USJp62cJUniMiwkKXJ6N3Fh5
       CLOUDINARY_CLOUD_NAME: dvhc5ay3t
       CLOUDINARY_API_KEY: 256435719362694
-      CLOUDINARY_API_SECRET: 256435719362694
+      CLOUDINARY_API_SECRET: MlzaSyFrexMFNirPO_xtNhouHdc
+      OPENAI_API_KEY: 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
     volumes:
       - .:/app
       - /app/node_modules

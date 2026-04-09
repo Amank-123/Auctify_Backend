@@ -13,7 +13,7 @@ import {
 } from "../services/auction.service.js";
 
 const createAuction = asyncHandler(async (req, res) => {
-    const data = await createAuctionDB(req.body, req.user._id);
+    const data = await createAuctionDB(req.body, req.user._id, req.files);
 
     if (!data) throw new ApiError(500, "Failed to create the auction");
 

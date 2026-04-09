@@ -1,5 +1,3 @@
-// ✅ generate signature (for backend testing)
-
 import crypto from "crypto";
 const generateSignature = () => {
     const body = "order_Sau2iQtUnP6OCn" + "|" + "69d5f85f428b1f6e06535e3b";
@@ -9,7 +7,6 @@ const generateSignature = () => {
         .update(body)
         .digest("hex");
 
-    console.log(sign);
+    return sign;
 };
-
-generateSignature();
+console.log(generateSignature());

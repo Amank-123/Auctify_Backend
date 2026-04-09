@@ -1,8 +1,8 @@
 import { Queue } from "bullmq";
-import { redisconnection } from "../config/redis.js";
+import { RedisClient } from "../config/redis.js";
 
 export const auctionQueue = new Queue("auctionQueue", {
-    connection: redisconnection,
+    connection: RedisClient,
     defaultJobOptions: {
         attempts: 5,
         backoff: { type: "exponential", delay: 2000 },

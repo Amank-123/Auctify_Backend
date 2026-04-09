@@ -10,9 +10,9 @@ const createBidDB = async (auctionId, userId, amount) => {
         throw new ApiError(400, "Invalid auction id");
 
     return await runTransaction(async (session) => {
-        console.log(
-            `Auction Id: ${auctionId}, Amount: ${amount}, userId: ${userId}`
-        );
+        // console.log(
+        //     `Auction Id: ${auctionId}, Amount: ${amount}, userId: ${userId}`
+        // );
         const auction = await Auction.findOneAndUpdate(
             {
                 _id: auctionId,
@@ -30,7 +30,9 @@ const createBidDB = async (auctionId, userId, amount) => {
             { returnDocument: "after", session }
         );
 
-        console.log(`${auction} , ${auction._id}`);
+        //console.log(`${auction} , ${auction._id}`);
+        if (auction.highestBidId.toString() === userId.toString())
+            throw new ApiError(400, "You can't bid against your own bid");
         if (!auction || !auction._id)
             throw new ApiError(400, "Bid failed (outbid or auction expired)");
 

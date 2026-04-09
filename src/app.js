@@ -10,7 +10,7 @@ import auctionRouter from "./routes/auction.route.js";
 import bidRouter from "./routes/bid.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import OTPRouter from "./routes/otp.route.js";
-
+import ChatBotRouter from "./routes/chatbot.route.js";
 const app = express();
 
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
@@ -28,6 +28,7 @@ app.use("/api/bid", bidRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/otp", OTPRouter);
+app.use("/api/chat", ChatBotRouter);
 
 //All routes should be above the error handler middleware
 app.use(errorHandler);

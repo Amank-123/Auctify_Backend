@@ -1,26 +1,42 @@
 import { Auction } from "../models/auction.model.js";
 import { Bid } from "../models/bid.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
 import { runTransaction } from "../utils/transaction.js";
+import handleViolation from "../utils/handleViolation.js";
+import uploadToCloudinary from "../utils/cloudinaryUploader.js";
 
-const createAuctionDB = async (auctionData, sellerId) => {
-    const auction = await Auction.create({
-        name: auctionData.name,
-        description: auctionData.description,
-        startPrice: auctionData.startPrice,
-        currentHighestBid: 0,
-        bidCount: 0,
-        status: "draft",
-        startTime: auctionData.startTime,
-        endedTime: undefined,
-        media: auctionData.media,
-        sellerId: sellerId,
-        highestBidId: undefined,
-        winnerId: undefined,
-    });
-
-    return auction;
+const createAuctionDB = async (auctionData, sellerId, files) => {
+    try {
+        if (!files || files.length === 0) {
+            throw new Error("At least one media file required");
+        }
+        let mediaArr = [];
+        for (const file of files) {
+            const media = await uploadToCloudinary(file.buffer, file.mime);
+            mediaArr.push(media.secure_url);
+        }
+        const auction = await Auction.create({
+            name: auctionData.name,
+            description: auctionData.description,
+            startPrice: auctionData.startPrice,
+            currentHighestBid: 0,
+            bidCount: 0,
+            status: "draft",
+            startTime: auctionData.startTime,
+            endedTime: undefined,
+            media: mediaArr,
+            sellerId: sellerId,
+            highestBidId: undefined,
+            winnerId: undefined,
+        });
+        return auction;
+    } catch (err) {
+        const user = User.findById(sellerId);
+        handleViolation(user);
+        throw err;
+    }
 };
 
 const getAllAuctionsDB = async (filters, options) => {
