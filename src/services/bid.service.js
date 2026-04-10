@@ -3,6 +3,7 @@ import { Auction } from "../models/auction.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { runTransaction } from "../utils/transaction.js";
 import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
+import { io } from "../index.js";
 import mongoose from "mongoose";
 
 const createBidDB = async (auctionId, userId, amount) => {
@@ -48,6 +49,13 @@ const createBidDB = async (auctionId, userId, amount) => {
         auction.highestBidId = bid._id;
 
         await auction.save({ session });
+
+        io.to(auctionId).emit("newBid", {
+        auctionId,
+        amount,
+        user: req.user._id,
+        });
+
         return bid;
     });
 };

@@ -9,6 +9,7 @@ import {
 } from "../services/user.service.js";
 
 const registerUser = asyncHandler(async (req, res) => {
+    console.log(req.file)
     await registerUserDB(req.body, req.file);
     return ApiResponse(res, 200, "user created successfully");
 });

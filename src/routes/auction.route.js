@@ -24,10 +24,10 @@ router
     .route("/")
     .get(publicApiLimiter, getAllAuctions)
     .post(
+        upload.array("media", 10),
         validateData(auctionCreateValidator),
         protect,
         protectedApiLimiter,
-        upload.array("media", 10),
         createAuction
     );
 router.route("/seller").get(protect, protectedApiLimiter, getsellerAuctions);

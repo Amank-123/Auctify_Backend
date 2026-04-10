@@ -1,4 +1,7 @@
-const handleViolation = (user) => {
+import {User} from "../models/user.model.js"
+
+const handleViolation = async(id) => {
+    const user=await User.findById(id)
     user.violationCount += 1;
 
     if (user.violationCount === 1) {

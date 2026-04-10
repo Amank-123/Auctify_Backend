@@ -11,11 +11,31 @@ import bidRouter from "./routes/bid.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import OTPRouter from "./routes/otp.route.js";
 import ChatBotRouter from "./routes/chatbot.route.js";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
+
 const app = express();
 
+app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 
 app.use(express.json());
+
+// // app.use(xss());
+// app.use(
+//   mongoSanitize({
+//     allowDots: true,
+//     replaceWith: "_",
+//   })
+// );
+
+app.use((req, res, next) => {
+  if (req.body) req.body = mongoSanitize.sanitize(req.body);
+  if (req.params) req.params = mongoSanitize.sanitize(req.params);
+  next();
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(passport.initialize());

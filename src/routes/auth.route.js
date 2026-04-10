@@ -15,14 +15,15 @@ import { validateData } from "../middlewares/validate.middleware.js";
 import { upload } from "../middlewares/multer.js";
 import { protectedApiLimiter } from "../limiters/protectedApi.limiter.js";
 
+
 const router = Router();
 
 router
     .route("/register")
     .post(
-        authLimiter,
+        authLimiter, 
+        upload.single("profile"),
         validateData(userRegisterSchema),
-        upload.single("avatar"),
         registerUser
     );
 router.route("/login").post(authLimiter, loginUser);

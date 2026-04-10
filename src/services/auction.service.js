@@ -8,13 +8,14 @@ import handleViolation from "../utils/handleViolation.js";
 import uploadToCloudinary from "../utils/cloudinaryUploader.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
-    try {
+    
         if (!files || files.length === 0) {
             throw new Error("At least one media file required");
         }
         let mediaArr = [];
         for (const file of files) {
-            const media = await uploadToCloudinary(file.buffer, file.mime);
+            const media = await uploadToCloudinary(file.buffer, file.mimetype);
+            console.log("Mime type:",file.mimetype);
             mediaArr.push(media.secure_url);
         }
         const auction = await Auction.create({
@@ -32,11 +33,7 @@ const createAuctionDB = async (auctionData, sellerId, files) => {
             winnerId: undefined,
         });
         return auction;
-    } catch (err) {
-        const user = User.findById(sellerId);
-        handleViolation(user);
-        throw err;
-    }
+    
 };
 
 const getAllAuctionsDB = async (filters, options) => {
