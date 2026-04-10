@@ -1,16 +1,73 @@
 import { Payment } from "../models/payment.model.js";
 import { Order } from "../models/order.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { verifySignature } from "../utils/verifySignature.js";
+import razorpay from "../config/razorpay.js";
+
+const verifyPaymentDB = async (data) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = data;
+
+    const isValid = verifySignature(
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+    );
+
+    if (!isValid) throw new ApiError(400, "Invalid payment");
+
+    const payment = await Payment.findOne({
+        "gateway.transactionId": razorpay_order_id,
+    });
+
+    if (!payment) throw new ApiError(404, "Payment not found");
+
+    // 3. update status
+    payment.status = "completed";
+
+    // 4. store both ids (IMPORTANT)
+    payment.gateway.orderId = razorpay_order_id;
+    payment.gateway.paymentId = razorpay_payment_id;
+
+    await payment.save();
+
+    return payment;
+};
 
 /** Create payment */
 const createPaymentDB = async (data, userId) => {
-    const paymentExists = await Payment.findOne({ orderId: data.orderId });
-    if (paymentExists) throw new ApiError(403, "payment already exists");
-    const order = await Order.findById(data.orderId);
-    if (!order) throw new ApiError(403, "Order not found");
-    data.userId = userId;
+    try {
+        console.log("data obj", data);
+        const paymentExists = await Payment.findOne({ orderId: data.orderId });
+        if (paymentExists) throw new ApiError(403, "payment already exists");
 
-    return await Payment.create(data);
+        const order = await Order.findById(data.orderId);
+        console.log("order onj:", order);
+        if (!order) throw new ApiError(403, "Order not found");
+        // ✅ Create Razorpay order
+        const razorOrder = await razorpay.orders.create({
+            amount: order.finalPrice * 100,
+            currency: "INR",
+            receipt: order._id.toString(),
+        });
+
+        // ✅ Create payment in DB
+        const rzrPay = await Payment.create({
+            userId,
+            orderId: data.orderId,
+            amount: order.finalPrice,
+            paymentMethod: data.paymentMethod, // 🔥 REQUIRED
+            status: "pending",
+            gateway: {
+                name: "razorpay",
+                transactionId: razorOrder.id,
+            },
+        });
+
+        return { rzrPay, razorOrder };
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
 };
 
 /** For Admin */
@@ -71,6 +128,7 @@ const updatePaymentStatusDB = async (paymentId, status, failureReason) => {
 };
 
 export {
+    verifyPaymentDB,
     createPaymentDB,
     allPaymentDB,
     paymentByOrderDB,

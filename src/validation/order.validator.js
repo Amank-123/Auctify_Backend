@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { addressSchema } from "./address.schema.js";
+import { addressSchema } from "./user.validation.js";
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
 

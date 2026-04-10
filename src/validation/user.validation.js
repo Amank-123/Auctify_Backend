@@ -53,6 +53,7 @@ const userRegisterSchema = z
         email: z
             .email("Invalid email format")
             .transform((val) => val.toLowerCase()),
+        status: z.enum(["warned", "temp-restricted", "banned", "neuteral"]).default("neuteral"),
         password: z
             .string({ required_error: "Password is required" })
             .trim()

@@ -36,6 +36,19 @@ const userSchema = new Schema(
                 return !(this.googleId || this.githubId);
             },
         },
+        profile: {
+            type: String,
+        },
+        violationCount: {
+            type: Number,
+            min: 0,
+            default: 0,
+        },
+        status: {
+            type: String,
+            enum: ["warned", "temp-restricted", "banned", "neuteral"],
+            default: "neutral",
+        },
         refreshToken: {
             type: String,
             select: false,

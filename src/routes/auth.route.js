@@ -7,15 +7,32 @@ import {
 } from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import passport from "../config/passport.js";
+import { authLimiter } from "../limiters/auth.limiter.js";
+import { oauthLimiter } from "../limiters/oauth.limiter.js";
+import { userRegisterSchema } from "../validation/user.validation.js";
+import { registerUser } from "../controllers/user.controller.js";
+import { validateData } from "../middlewares/validate.middleware.js";
+import { upload } from "../middlewares/multer.js";
+import { protectedApiLimiter } from "../limiters/protectedApi.limiter.js";
+
 
 const router = Router();
 
-router.route("/login").post(loginUser);
-router.route("/refresh").post(refreshAccessToken);
-router.route("/logout").post(protect, logoutUser);
+router
+    .route("/register")
+    .post(
+        authLimiter, 
+        upload.single("profile"),
+        validateData(userRegisterSchema),
+        registerUser
+    );
+router.route("/login").post(authLimiter, loginUser);
+router.route("/refresh").post(authLimiter, refreshAccessToken);
+router.route("/logout").post(protect, protectedApiLimiter, logoutUser);
 
 //google Oauth routes
 router.route("/google").get(
+    oauthLimiter,
     passport.authenticate("google", {
         scope: ["openid", "profile", "email"],
     })
@@ -27,7 +44,10 @@ router
 //git Oauth routes
 router
     .route("/github")
-    .get(passport.authenticate("github", { scope: ["user:email"] }));
+    .get(
+        oauthLimiter,
+        passport.authenticate("github", { scope: ["user:email"] })
+    );
 router
     .route("/github/callback")
     .get(passport.authenticate("github", { session: false }), oauthCallback);

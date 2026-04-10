@@ -2,12 +2,18 @@ import { Bid } from "../models/bid.model.js";
 import { Auction } from "../models/auction.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { runTransaction } from "../utils/transaction.js";
+import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
+import { io } from "../index.js";
+import mongoose from "mongoose";
 
 const createBidDB = async (auctionId, userId, amount) => {
     if (!mongoose.Types.ObjectId.isValid(auctionId))
         throw new ApiError(400, "Invalid auction id");
 
     return await runTransaction(async (session) => {
+        // console.log(
+        //     `Auction Id: ${auctionId}, Amount: ${amount}, userId: ${userId}`
+        // );
         const auction = await Auction.findOneAndUpdate(
             {
                 _id: auctionId,
@@ -18,13 +24,17 @@ const createBidDB = async (auctionId, userId, amount) => {
             {
                 $set: {
                     currentHighestBid: amount,
+                    countdownEnd: new Date(Date.now() + 30 * 1000),
                 },
                 $inc: { bidCount: 1 },
             },
-            { new: true, session }
+            { returnDocument: "after", session }
         );
 
-        if (!auction)
+        //console.log(`${auction} , ${auction._id}`);
+        if (auction.highestBidId.toString() === userId.toString())
+            throw new ApiError(400, "You can't bid against your own bid");
+        if (!auction || !auction._id)
             throw new ApiError(400, "Bid failed (outbid or auction expired)");
 
         const bid = new Bid({
@@ -34,9 +44,18 @@ const createBidDB = async (auctionId, userId, amount) => {
         });
         await bid.save({ session });
 
+        scheduleAuctionEnd(auction._id, auction.countdownEnd);
+
         auction.highestBidId = bid._id;
 
         await auction.save({ session });
+
+        io.to(auctionId).emit("newBid", {
+        auctionId,
+        amount,
+        user: req.user._id,
+        });
+
         return bid;
     });
 };

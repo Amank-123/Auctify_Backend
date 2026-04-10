@@ -13,7 +13,7 @@ const options = {
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     if (!email && !password)
-        throw new ApiError(400, "Username and password are required");
+        throw new ApiError(400, "Email and password are required");
 
     const { user, accessToken, refreshToken } = await loginUserDB(
         email,
@@ -87,4 +87,5 @@ const oauthCallback = asyncHandler(async (req, res) => {
             message: "Authentication successfully done",
         });
 });
+
 export { loginUser, refreshAccessToken, logoutUser, oauthCallback };

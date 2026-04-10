@@ -1,15 +1,16 @@
 import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const loginUserDB = async (email, password) => {
     const user = await User.findOne({ email }).select(
         "+password +refreshToken"
     );
-    if (!user) throw new Error(404, "User not found check email");
+    if (!user) throw new ApiError(404, "User not found check email");
 
     if (!user.isVerified) throw new ApiError(403, "Verify your email first");
 
     const isValid = await user.comparePassword(password);
-    if (!isValid) throw new Error(401, "Incorrect Credentials");
+    if (!isValid) throw new ApiError(401, "Incorrect Credentials");
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();

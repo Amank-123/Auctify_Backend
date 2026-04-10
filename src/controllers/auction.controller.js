@@ -13,7 +13,7 @@ import {
 } from "../services/auction.service.js";
 
 const createAuction = asyncHandler(async (req, res) => {
-    const data = await createAuctionDB(req.body, req.user._id);
+    const data = await createAuctionDB(req.body, req.user._id, req.files);
 
     if (!data) throw new ApiError(500, "Failed to create the auction");
 
@@ -104,7 +104,7 @@ const startAuction = asyncHandler(async (req, res) => {
 
 const endAuction = asyncHandler(async (req, res) => {
     const auctionId = req.params.id;
-    const auction = await endAuctionDB(auctionId, req.user._id);
+    const auction = await endAuctionDB(auctionId);
 
     if (auction.status === "active")
         throw new ApiError(500, "Failed to end the auction");
@@ -116,7 +116,8 @@ const endAuction = asyncHandler(async (req, res) => {
         return ApiResponse(
             res,
             200,
-            "Ended the auction and announced the winner"
+            "Ended the auction and announced the winner",
+            auction
         );
     }
 });
