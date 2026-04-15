@@ -18,7 +18,7 @@ const sendOtpDB = async (email) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
     await sendEmail(email, otp);
-};
+}; 
 
 const verifyOtpDB = async (email, otp) => {
     const record = await Otp.findOne({ email });

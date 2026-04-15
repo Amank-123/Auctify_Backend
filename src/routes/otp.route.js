@@ -8,3 +8,4 @@ router.post("/verify", publicApiLimiter, verifyOTP);
 router.post("/resend", publicApiLimiter, resendOTP);
 
 export default router;
+ 

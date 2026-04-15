@@ -8,17 +8,22 @@ const resendOTP = asyncHandler(async (req, res) => {
 
     res.json({ message: "OTP resent" });
 });
+const options={
+    httpOnly:true,
+    secure:true,
+    sameSite:"Strict"
+}
 
 const verifyOTP = asyncHandler(async (req, res) => {
     const { email, otp } = req.body;
-
+    console.log(email, otp);
     const { accessToken, refreshToken } = await verifyOtpDB(email, otp);
 
-    return res
+    return res 
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .redirect(`${process.env.CLIENT_URL}/auth/success`);
+       .json({ success: true, message: "Verified successfully" }); 
 });
 
 export { verifyOTP, resendOTP };

@@ -12,11 +12,12 @@ const options = {
 
 const registerUser = asyncHandler(async (req, res) => {
     console.log(req.file);
-    await registerUserDB(req.body, req.file);
+    const user=await registerUserDB(req.body, req.file);
 
     return res.status(200).json({
         success: true,
         message: "User registered successfully need verification",
+        user
     });
 });
 
