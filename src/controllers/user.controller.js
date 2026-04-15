@@ -2,17 +2,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {
-    registerUserDB,
     updateUserDB,
     getUserDB,
     deleteUserDB,
 } from "../services/user.service.js";
-
-const registerUser = asyncHandler(async (req, res) => {
-    console.log(req.file)
-    await registerUserDB(req.body, req.file);
-    return ApiResponse(res, 200, "user created successfully");
-});
 
 const getUser = asyncHandler(async (req, res) => {
     const data = await getUserDB(req.user._id);
@@ -33,4 +26,4 @@ const deleteUser = asyncHandler(async (req, res) => {
     return ApiResponse(res, 200, "Successfully removed user from DB ");
 });
 
-export { registerUser, getUser, updateUser, deleteUser };
+export { getUser, updateUser, deleteUser };

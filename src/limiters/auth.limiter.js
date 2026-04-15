@@ -4,7 +4,7 @@ import { RedisStore } from "rate-limit-redis";
 
 export const authLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    limit: 5,
+    limit: process.env.AUTH_RATE_LIMIT_MAX,
 
     standardHeaders: true,
     legacyHeaders: false,

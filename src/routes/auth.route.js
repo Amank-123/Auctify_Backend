@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    registerUser,
     loginUser,
     refreshAccessToken,
     logoutUser,
@@ -10,18 +11,16 @@ import passport from "../config/passport.js";
 import { authLimiter } from "../limiters/auth.limiter.js";
 import { oauthLimiter } from "../limiters/oauth.limiter.js";
 import { userRegisterSchema } from "../validation/user.validation.js";
-import { registerUser } from "../controllers/user.controller.js";
 import { validateData } from "../middlewares/validate.middleware.js";
 import { upload } from "../middlewares/multer.js";
 import { protectedApiLimiter } from "../limiters/protectedApi.limiter.js";
-
 
 const router = Router();
 
 router
     .route("/register")
     .post(
-        authLimiter, 
+        authLimiter,
         upload.single("profile"),
         validateData(userRegisterSchema),
         registerUser
