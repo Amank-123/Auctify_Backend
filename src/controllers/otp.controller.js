@@ -12,9 +12,13 @@ const resendOTP = asyncHandler(async (req, res) => {
 const verifyOTP = asyncHandler(async (req, res) => {
     const { email, otp } = req.body;
 
-    await verifyOtpDB(email, otp);
+    const { accessToken, refreshToken } = await verifyOtpDB(email, otp);
 
-    res.json({ message: "Email verified" });
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .redirect(`${process.env.CLIENT_URL}/auth/success`);
 });
 
 export { verifyOTP, resendOTP };

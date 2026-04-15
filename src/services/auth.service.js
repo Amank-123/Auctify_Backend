@@ -18,13 +18,8 @@ const registerUserDB = async (data, file) => {
         profile: mediaURL,
     });
     await sendOtpDB(user.email);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
 
-    user.refreshToken = refreshToken;
-    await user.save({ runValidators: false });
-
-    return { user, accessToken, refreshToken };
+    return user;
 };
 
 const loginUserDB = async (email, password) => {

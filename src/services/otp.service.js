@@ -27,9 +27,20 @@ const verifyOtpDB = async (email, otp) => {
     const isMatch = await bcrypt.compare(otp, record.otp);
     if (!isMatch) throw new Error("Invalid OTP");
 
-    await User.findOneAndUpdate({ email }, { $set: { isVerified: true } });
+    const user = await User.findOneAndUpdate(
+        { email },
+        { $set: { isVerified: true } },
+        { returnDocument: "after" }
+    );
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ runValidators: false });
 
     await Otp.deleteMany({ email });
+    return { accessToken, refreshToken };
 };
 
 export { verifyOtpDB, sendOtpDB };

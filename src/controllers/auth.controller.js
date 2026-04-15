@@ -3,7 +3,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { loginUserDB, registerUserDB } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
 import { verifyRefreshToken } from "../utils/jwtVerification.utils.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
 
 const options = {
     httpOnly: true,
@@ -13,24 +12,12 @@ const options = {
 
 const registerUser = asyncHandler(async (req, res) => {
     console.log(req.file);
-    const { user, accessToken, refreshToken } = await registerUserDB(
-        req.body,
-        req.file
-    );
+    await registerUserDB(req.body, req.file);
 
-    if (user) {
-        return res
-            .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
-            .redirect(`${process.env.CLIENT_URL}/auth/success`);
-    }
-
-    return ApiResponse(
-        res,
-        500,
-        "Something went wrong registering user or loging user in"
-    );
+    return res.status(200).json({
+        success: true,
+        message: "User registered successfully need verification",
+    });
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -99,7 +86,6 @@ const oauthCallback = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-    console.log("Access token: ", accessToken);
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return res
