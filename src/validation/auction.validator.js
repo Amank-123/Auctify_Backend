@@ -21,6 +21,7 @@ const auctionCreateValidator = z
             .array(z.string().url("Media must be valid URL"))
             .max(10, "You can upload up to 10 media files only")
             .optional(),
+        category: z.string()
     })
     .strict();
 

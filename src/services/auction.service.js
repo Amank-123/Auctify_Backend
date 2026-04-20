@@ -31,6 +31,7 @@ const createAuctionDB = async (auctionData, sellerId, files) => {
             sellerId: sellerId,
             highestBidId: undefined,
             winnerId: undefined,
+            category:auctionData.category
         });
         return auction;
     
