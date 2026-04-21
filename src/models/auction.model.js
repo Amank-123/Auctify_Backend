@@ -88,6 +88,33 @@ const auctionSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "User",
         },
+        category: {
+            type: String,
+            enum: {
+                values: [
+                    "electronics",
+                    "fashion",
+                    "jewelry",
+                    "watches",
+                    "vehicles",
+                    "real_estate",
+                    "art",
+                    "collectibles",
+                    "furniture",
+                    "books",
+                    "sports",
+                    "gaming",
+                    "music",
+                    "antiques",
+                    "toys",
+                    "luxury",
+                    "industrial",
+                    "other"
+                ],
+                message: "Invalid item category",
+            },
+            required: true
+        }
     },
     {
         timestamps: true,
