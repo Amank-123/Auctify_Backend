@@ -44,7 +44,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const token = req.cookies.refreshToken;
-    if (!token) throw new ApiError(401, "Unauthroized access token not found");
+    if (!token) throw new ApiError(401, "Unauthroized! Token not found");
 
     const decoded = verifyRefreshToken(token);
 

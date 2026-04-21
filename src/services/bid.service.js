@@ -30,10 +30,9 @@ const createBidDB = async (auctionId, userId, amount) => {
             },
             { returnDocument: "after", session }
         );
+        if (!auction)
+            throw new ApiError(400, "Bid failed (outbid or auction expired)");
 
-        //console.log(`${auction} , ${auction._id}`);
-        if (auction.highestBidId.toString() === userId.toString())
-            throw new ApiError(400, "You can't bid against your own bid");
         if (!auction || !auction._id)
             throw new ApiError(400, "Bid failed (outbid or auction expired)");
 
@@ -44,17 +43,17 @@ const createBidDB = async (auctionId, userId, amount) => {
         });
         await bid.save({ session });
 
-        scheduleAuctionEnd(auction._id, auction.countdownEnd);
-
         auction.highestBidId = bid._id;
 
         await auction.save({ session });
 
-        io.to(auctionId).emit("newBid", {
-        auctionId,
-        amount,
-        user: req.user._id,
-        });
+        // io.to(auctionId).emit("newBid", {
+        //     auctionId,
+        //     amount,
+        //     user: req.user._id,
+        // });
+
+        scheduleAuctionEnd(auction._id, auction.countdownEnd);
 
         return bid;
     });
@@ -98,7 +97,7 @@ const userBidsDB = async (userId) => {
 const auctionBidsDB = async (auctionId) => {
     const auction = await Auction.findById(auctionId);
     if (!auction) throw new ApiError(404, "Auction not found");
-    const bids = await Bid.find(auctionId);
+    const bids = await Bid.find({ auctionId });
     return bids;
 };
 export {
