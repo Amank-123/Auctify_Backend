@@ -14,7 +14,7 @@ const updateUserDB = async (userId, payload, file) => {
         const media = await uploadToCloudinary(file.buffer, file.mimetype);
         if (!file.mimetype.startsWith("image"))
             throw new ApiError(400, "Profile should be type image");
-        payload.media = media.secure_url;
+        payload.profile = media.secure_url;
     }
     const updatedUser = await User.findByIdAndUpdate(
         userId,
