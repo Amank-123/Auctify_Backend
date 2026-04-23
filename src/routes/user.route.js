@@ -8,6 +8,7 @@ import { validateData } from "../middlewares/validate.middleware.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { updateUserSchema } from "../validation/user.validation.js";
 import { protectedApiLimiter } from "../limiters/protectedApi.limiter.js";
+import { upload } from "../middlewares/multer.js";
 const router = Router();
 
 router.route("/").get(protect, protectedApiLimiter, getUser);
@@ -16,6 +17,7 @@ router
     .post(
         protect,
         protectedApiLimiter,
+        upload.single("profile"),
         validateData(updateUserSchema),
         updateUser
     );

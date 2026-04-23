@@ -8,73 +8,118 @@ import handleViolation from "../utils/handleViolation.js";
 import uploadToCloudinary from "../utils/cloudinaryUploader.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
-    
-        if (!files || files.length === 0) {
-            throw new Error("At least one media file required");
-        }
-        let mediaArr = [];
-        for (const file of files) {
-            const media = await uploadToCloudinary(file.buffer, file.mimetype);
-            console.log("Mime type:",file.mimetype);
-            mediaArr.push(media.secure_url);
-        }
-        const auction = await Auction.create({
-            name: auctionData.name,
-            description: auctionData.description,
-            startPrice: auctionData.startPrice,
-            currentHighestBid: 0,
-            bidCount: 0,
-            status: "draft",
-            startTime: auctionData.startTime,
-            endedTime: undefined,
-            media: mediaArr,
-            sellerId: sellerId,
-            highestBidId: undefined,
-            winnerId: undefined,
-            category:auctionData.category
-        });
-        return auction;
-    
+    if (!files || files.length === 0) {
+        throw new Error("At least one media file required");
+    }
+    let mediaArr = [];
+    for (const file of files) {
+        const media = await uploadToCloudinary(file.buffer, file.mimetype);
+        console.log("Mime type:", file.mimetype);
+        mediaArr.push(media.secure_url);
+    }
+    const auction = await Auction.create({
+        name: auctionData.name,
+        description: auctionData.description,
+        startPrice: auctionData.startPrice,
+        currentHighestBid: 0,
+        bidCount: 0,
+        status: "draft",
+        startTime: auctionData.startTime,
+        endedTime: undefined,
+        media: mediaArr,
+        sellerId: sellerId,
+        highestBidId: undefined,
+        winnerId: undefined,
+        category: auctionData.category,
+    });
+    return auction;
 };
 
 const getAllAuctionsDB = async (filters, options) => {
-    const { status, minPrice, maxPrice, sellerId, search } = filters;
+    const { status, minPrice, maxPrice, sellerId, search, category } = filters;
     const { page, limit, order, sortBy } = options;
 
-    const skip = (page - 1) * limit;
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.min(50, Math.max(1, Number(limit) || 10));
+    const skip = (safePage - 1) * safeLimit;
 
     const match = {};
 
     if (status) match.status = status;
 
-    if (sellerId) match.sellerId = new mongoose.Types.ObjectId(sellerId);
+    const ALLOWED_CATEGORIES = [
+        "electronics",
+        "fashion",
+        "jewelry",
+        "watches",
+        "vehicles",
+        "real_estate",
+        "art",
+        "collectibles",
+        "furniture",
+        "books",
+        "sports",
+        "gaming",
+        "music",
+        "antiques",
+        "toys",
+        "luxury",
+        "industrial",
+        "other",
+    ];
 
-    if (minPrice || maxPrice) {
+    const normalizedCategory = category?.toLowerCase().trim();
+
+    if (normalizedCategory && ALLOWED_CATEGORIES.includes(normalizedCategory)) {
+        match.category = normalizedCategory;
+    }
+
+    if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) {
+        match.sellerId = new mongoose.Types.ObjectId(sellerId);
+    }
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
         match.currentHighestBid = {};
         if (minPrice !== undefined) {
-            match.currentHighestBid.$gte = minPrice;
+            match.currentHighestBid.$gte = Number(minPrice);
         }
-
         if (maxPrice !== undefined) {
-            match.currentHighestBid.$lte = maxPrice;
+            match.currentHighestBid.$lte = Number(maxPrice);
         }
     }
 
-    if (search) match.name = { $regex: search, $options: "i" };
+    if (search) {
+        const escapeRegex = (text) =>
+            text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        match.name = {
+            $regex: escapeRegex(search),
+            $options: "i",
+        };
+    }
+
+    const allowedSortFields = ["createdAt", "currentHighestBid", "name"];
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
 
     const pipeline = [
+        { $match: match },
         {
-            $match: match,
+            $lookup: {
+                from: "users",
+                localField: "sellerId",
+                foreignField: "_id",
+                as: "seller",
+            },
         },
         {
-            $sort: { [sortBy]: order === "asc" ? 1 : -1 },
+            $unwind: {
+                path: "$seller",
+                preserveNullAndEmptyArrays: true,
+            },
         },
-        {
-            $skip: skip,
-        },
-        {
-            $limit: limit,
-        },
+        { $sort: { [sortField]: order === "asc" ? 1 : -1 } },
+        { $skip: skip },
+        { $limit: safeLimit },
     ];
 
     return await Auction.aggregate(pipeline);
@@ -87,7 +132,7 @@ const getsellerAuctionsDB = async (userId) => {
 };
 
 const getAuctionByIdDB = async (auctionId) => {
-    const auction = await Auction.findById(auctionId).populate("highestBidId");
+    const auction = await Auction.findById(auctionId).populate("sellerId");
 
     return auction;
 };

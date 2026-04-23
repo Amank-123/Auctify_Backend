@@ -97,7 +97,7 @@ const userBidsDB = async (userId) => {
 const auctionBidsDB = async (auctionId) => {
     const auction = await Auction.findById(auctionId);
     if (!auction) throw new ApiError(404, "Auction not found");
-    const bids = await Bid.find({ auctionId });
+    const bids = await Bid.find({ auctionId }).populate("userId");
     return bids;
 };
 export {

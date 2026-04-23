@@ -30,11 +30,13 @@ const getAllAuctions = asyncHandler(async (req, res) => {
         page,
         limit,
         sortBy,
+        category,
         order,
     } = req.query;
 
     const filters = {
         status,
+        category,
         minPrice: minPrice ? Number(minPrice) : undefined,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         sellerId,
