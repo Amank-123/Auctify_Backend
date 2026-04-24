@@ -17,13 +17,54 @@ const auctionCreateValidator = z
             required_error: "Start time is required",
         }),
 
-        media: z
-            .array(z.string().url("Media must be valid URL"))
-            .max(10, "You can upload up to 10 media files only")
-            .optional(),
-        category: z.string()
+        // media: z
+        //     .array(z.string().url("Media must be valid URL"))
+        //     .max(10, "You can upload up to 10 media files only")
+        //     .optional(),
+
+        endTime: z.coerce.date().optional(),
+
+        auctionType: z.enum(["short", "long"]).default("long"),
+
+        category: z.enum([
+            "electronics",
+            "fashion",
+            "jewelry",
+            "watches",
+            "vehicles",
+            "real_estate",
+            "art",
+            "collectibles",
+            "furniture",
+            "books",
+            "sports",
+            "gaming",
+            "music",
+            "antiques",
+            "toys",
+            "luxury",
+            "industrial",
+            "other",
+        ]),
     })
-    .strict();
+    .strict()
+    .superRefine((data, ctx) => {
+        if (data.auctionType === "long" && !data.endTime) {
+            ctx.addIssue({
+                path: ["endTime"],
+                code: z.ZodIssueCode.custom,
+                message: "End time is required for long auctions",
+            });
+        }
+
+        if (data.endTime && data.startTime && data.endTime <= data.startTime) {
+            ctx.addIssue({
+                path: ["endTime"],
+                code: z.ZodIssueCode.custom,
+                message: "End time must be after start time",
+            });
+        }
+    });
 
 const updateAuctionValidator = z
     .object({

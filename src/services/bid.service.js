@@ -28,7 +28,7 @@ const createBidDB = async (auctionId, userId, amount) => {
                 },
                 $inc: { bidCount: 1 },
             },
-            { returnDocument: "after", session }
+            { new: true, session }
         );
         if (!auction)
             throw new ApiError(400, "Bid failed (outbid or auction expired)");
@@ -47,13 +47,15 @@ const createBidDB = async (auctionId, userId, amount) => {
 
         await auction.save({ session });
 
-        // io.to(auctionId).emit("newBid", {
-        //     auctionId,
-        //     amount,
-        //     user: req.user._id,
-        // });
+        io.to(auctionId).emit("newBid", {
+            auctionId,
+            amount,
+            user: req.user._id,
+        });
 
-        scheduleAuctionEnd(auction._id, auction.countdownEnd);
+        if (auction.auctionType === "short") {
+            scheduleAuctionEnd(auctionId, auction.countdownEnd);
+        }
 
         return bid;
     });

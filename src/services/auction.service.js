@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { runTransaction } from "../utils/transaction.js";
 import handleViolation from "../utils/handleViolation.js";
 import uploadToCloudinary from "../utils/cloudinaryUploader.js";
+import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
     if (!files || files.length === 0) {
@@ -24,7 +25,9 @@ const createAuctionDB = async (auctionData, sellerId, files) => {
         currentHighestBid: 0,
         bidCount: 0,
         status: "draft",
+        auctionType: auctionData.auctionType,
         startTime: auctionData.startTime,
+        endTime: auctionData.endTime,
         endedTime: undefined,
         media: mediaArr,
         sellerId: sellerId,
@@ -32,11 +35,20 @@ const createAuctionDB = async (auctionData, sellerId, files) => {
         winnerId: undefined,
         category: auctionData.category,
     });
+
     return auction;
 };
 
 const getAllAuctionsDB = async (filters, options) => {
-    const { status, minPrice, maxPrice, sellerId, search, category } = filters;
+    const {
+        status,
+        minPrice,
+        maxPrice,
+        sellerId,
+        search,
+        category,
+        auctionType,
+    } = filters;
     const { page, limit, order, sortBy } = options;
 
     const safePage = Math.max(1, Number(page) || 1);
@@ -76,6 +88,10 @@ const getAllAuctionsDB = async (filters, options) => {
 
     if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) {
         match.sellerId = new mongoose.Types.ObjectId(sellerId);
+    }
+
+    if (auctionType) {
+        match.auctionType = auctionType;
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {
@@ -163,12 +179,17 @@ const startAuctionDB = async (auctionId, userId) => {
     const auction = await Auction.findOneAndUpdate(
         {
             _id: auctionId,
-            sellerId: userId,
+            sellerId: new mongoose.Types.ObjectId(userId),
             status: "draft",
         },
         { $set: { status: "active" } },
-        { returnDocument: "after" }
+        { new: true }
     );
+    console.log(auction);
+
+    if (auction.auctionType === "long") {
+        scheduleAuctionEnd(auctionId, auction.endTime);
+    }
 
     return auction;
 };

@@ -59,10 +59,19 @@ const auctionSchema = new Schema(
             required: [true, "Start time is required"],
         },
 
+        endTime: {
+            type: Date,
+            required: [
+                function () {
+                    return this.auctionType === "long";
+                },
+                "End time is required for long auctions",
+            ],
+        },
+
         endedTime: {
             type: Date,
         },
-
         media: [
             {
                 type: [String],
@@ -88,6 +97,16 @@ const auctionSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "User",
         },
+        auctionType: {
+            type: String,
+            enum: {
+                values: ["short", "long"],
+                message: "Auction type can only be short or long",
+            },
+            default: "long",
+            required: true,
+        },
+
         category: {
             type: String,
             enum: {
@@ -109,12 +128,12 @@ const auctionSchema = new Schema(
                     "toys",
                     "luxury",
                     "industrial",
-                    "other"
+                    "other",
                 ],
                 message: "Invalid item category",
             },
-            required: true
-        }
+            required: true,
+        },
     },
     {
         timestamps: true,

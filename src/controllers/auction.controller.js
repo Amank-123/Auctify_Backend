@@ -32,6 +32,7 @@ const getAllAuctions = asyncHandler(async (req, res) => {
         sortBy,
         category,
         order,
+        auctionType,
     } = req.query;
 
     const filters = {
