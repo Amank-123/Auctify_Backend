@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Auction } from "../models/auction.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import uploadToCloudinary from "../utils/cloudinaryUploader.js";
 
@@ -31,4 +32,33 @@ const deleteUserDB = async (userId) => {
     if (!deletedUser) throw new ApiError(404, "User not found");
     return deletedUser;
 };
-export { updateUserDB, deleteUserDB, getUserDB };
+
+const toggleWatchListDB = async (userId, AuctionId) => {
+    const user = await User.findById(userId);
+    const auction = await Auction.findById(AuctionId);
+    if (auction.sellerId.toString() === userId.toString()) {
+        throw new ApiError("You cannot watchlist your own auction");
+    }
+    const find = user.watchList.some((id) => id.toString() === AuctionId);
+    if (!find) {
+        user.watchList.unshift(AuctionId);
+    } else {
+        user.watchList = user.watchList.filter(
+            (id) => id.toString() !== AuctionId
+        );
+    }
+    await user.save();
+    return { watchList: user, exist: !find };
+};
+
+const fetchWatchListDB = async (userId) => {
+    const user = await User.findById(userId).populate("watchList");
+    return user.watchList;
+};
+export {
+    updateUserDB,
+    deleteUserDB,
+    getUserDB,
+    toggleWatchListDB,
+    fetchWatchListDB,
+};

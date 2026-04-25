@@ -5,6 +5,8 @@ import {
     updateUserDB,
     getUserDB,
     deleteUserDB,
+    toggleWatchListDB,
+    fetchWatchListDB,
 } from "../services/user.service.js";
 
 const getUser = asyncHandler(async (req, res) => {
@@ -27,5 +29,18 @@ const deleteUser = asyncHandler(async (req, res) => {
 
     return ApiResponse(res, 200, "Successfully removed user from DB ");
 });
+const toggleWatchList = asyncHandler(async (req, res) => {
+    const data = await toggleWatchListDB(req.user._id, req.params.auctionId);
+    return ApiResponse(
+        res,
+        200,
+        data.exist ? "Aded to WatchList successfully" : "removed",
+        data
+    );
+});
+const fetchWatchList = asyncHandler(async (req, res) => {
+    const data = await fetchWatchListDB(req.user._id);
+    return ApiResponse(res, 200, "WatchList fetched successfully", data);
+});
 
-export { getUser, updateUser, deleteUser };
+export { getUser, updateUser, deleteUser, toggleWatchList, fetchWatchList };

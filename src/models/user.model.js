@@ -72,6 +72,7 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+        watchList: [{ type: Schema.Types.ObjectId, ref: "Auction" }],
     },
     {
         timestamps: true,

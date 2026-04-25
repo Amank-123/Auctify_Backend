@@ -3,6 +3,8 @@ import {
     getUser,
     updateUser,
     deleteUser,
+    fetchWatchList,
+    toggleWatchList,
 } from "../controllers/user.controller.js";
 import { validateData } from "../middlewares/validate.middleware.js";
 import { protect } from "../middlewares/auth.middleware.js";
@@ -22,6 +24,8 @@ router
         updateUser
     );
 
+router.route("/watchList").get(protect, fetchWatchList);
+router.route("/watchList/:auctionId").post(protect, toggleWatchList);
 router.route("/delete").post(protect, protectedApiLimiter, deleteUser);
 
 export default router;
