@@ -11,6 +11,7 @@ import bidRouter from "./routes/bid.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import OTPRouter from "./routes/otp.route.js";
 import ChatBotRouter from "./routes/chatbot.route.js";
+import NotificationRouter from "./routes/notification.route.js";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
@@ -31,9 +32,9 @@ app.use(express.json());
 // );
 
 app.use((req, res, next) => {
-  if (req.body) req.body = mongoSanitize.sanitize(req.body);
-  if (req.params) req.params = mongoSanitize.sanitize(req.params);
-  next();
+    if (req.body) req.body = mongoSanitize.sanitize(req.body);
+    if (req.params) req.params = mongoSanitize.sanitize(req.params);
+    next();
 });
 
 app.use(express.urlencoded({ extended: true }));
@@ -49,6 +50,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/otp", OTPRouter);
 app.use("/api/chat", ChatBotRouter);
+app.use("/api/notify", NotificationRouter);
 
 //All routes should be above the error handler middleware
 app.use(errorHandler);
