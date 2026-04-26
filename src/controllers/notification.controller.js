@@ -4,6 +4,7 @@ import {
     getNotificationDB,
     addNotificationDB,
     broadCastNotificationDB,
+    markAsReadNotificationDB,
 } from "../services/notification.service.js";
 
 const addNotification = asyncHandler(async (req, res) => {
@@ -20,4 +21,14 @@ const broadCastNotification = asyncHandler(async (req, res) => {
     const data = await broadCastNotificationDB(req.body);
     return ApiResponse(res, 200, "notification Broadcasted successfully", data);
 });
-export { addNotification, getNotification, broadCastNotification };
+
+const markAsReadNotification = asyncHandler(async (req, res) => {
+    const data = await markAsReadNotificationDB(req.params.id, req.user._id);
+    return ApiResponse(res, 200, "Marked as read", data);
+});
+export {
+    addNotification,
+    getNotification,
+    broadCastNotification,
+    markAsReadNotification,
+};

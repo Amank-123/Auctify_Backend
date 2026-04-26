@@ -25,4 +25,27 @@ const broadCastNotificationDB = async (payload) => {
     console.log(result);
     return users.length;
 };
-export { addNotificationDB, getNotificationDB, broadCastNotificationDB };
+
+const markAsReadNotificationDB = async (notificationId, userId) => {
+    const notification = await Notification.findOneAndUpdate(
+        {
+            _id: notificationId,
+            userId: userId,
+        },
+        {
+            $set: {
+                isRead: true,
+            },
+        },
+        {
+            returnDocument: "after",
+        }
+    );
+    return notification;
+};
+export {
+    addNotificationDB,
+    getNotificationDB,
+    broadCastNotificationDB,
+    markAsReadNotificationDB,
+};
