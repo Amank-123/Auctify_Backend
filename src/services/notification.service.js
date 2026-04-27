@@ -1,10 +1,14 @@
 import { Notification } from "../models/notification.model.js";
 import { User } from "../models/user.model.js";
+import { io } from "../index.js";
+
 const addNotificationDB = async (userId, payload) => {
     const notification = await Notification.create({
         userId: userId,
         ...payload,
     });
+
+    io.to(`user_${userId}`).emit("newNotification", notification);
 
     return notification;
 };
@@ -22,7 +26,13 @@ const broadCastNotificationDB = async (payload) => {
     const result = await Notification.insertMany(
         users.map((user) => ({ userId: user._id, ...payload }))
     );
-    console.log(result);
+    result.forEach((notification) => {
+        io.to(`user_${notification.userId}`).emit(
+            "newNotification",
+            notification
+        );
+    });
+
     return users.length;
 };
 
