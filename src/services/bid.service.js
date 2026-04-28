@@ -5,16 +5,33 @@ import { runTransaction } from "../utils/transaction.js";
 import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
 import { io } from "../index.js";
 import mongoose from "mongoose";
+import { emitEvent } from "../socket/events.js";
 
-const createBidDB = async (auctionId, userId, amount) => {
+const createBidDB = async (io, auctionId, userId, amount) => {
     if (!mongoose.Types.ObjectId.isValid(auctionId))
         throw new ApiError(400, "Invalid auction id");
 
     return await runTransaction(async (session) => {
-        // console.log(
-        //     `Auction Id: ${auctionId}, Amount: ${amount}, userId: ${userId}`
-        // );
-        const auction = await Auction.findOneAndUpdate(
+        const auction = await Auction.findById(auctionId)
+            .populate("highestBidId")
+            .session(session);
+
+        // console.log(auction);
+        // console.log(auction.highestBidId);
+        // console.log(userId);
+
+        if (auction.sellerId.toString() === userId.toString()) {
+            throw new ApiError(400, "Can't bid in your own auction");
+        }
+
+        if (
+            auction.highestBidId &&
+            auction.highestBidId.userId.toString() === userId.toString()
+        ) {
+            throw new ApiError(400, "Can't bid against your own bid");
+        }
+
+        const updatedAuction = await Auction.findOneAndUpdate(
             {
                 _id: auctionId,
                 status: "active",
@@ -28,34 +45,21 @@ const createBidDB = async (auctionId, userId, amount) => {
                 },
                 $inc: { bidCount: 1 },
             },
-            { new: true, session }
+            { returnDocument: "after", session }
         );
-        if (!auction)
+
+        if (!updatedAuction)
             throw new ApiError(400, "Bid failed (outbid or auction expired)");
 
-        if (!auction || !auction._id)
-            throw new ApiError(400, "Bid failed (outbid or auction expired)");
-
-        const bid = new Bid({
-            auctionId,
-            userId,
-            amount,
-        });
+        const bid = new Bid({ auctionId, userId, amount });
         await bid.save({ session });
 
-        auction.highestBidId = bid._id;
+        updatedAuction.highestBidId = bid._id;
+        await updatedAuction.save({ session });
 
-        await auction.save({ session });
+        await bid.populate("userId");
 
-        io.to(auctionId).emit("newBid", {
-            auctionId,
-            amount,
-            user: req.user._id,
-        });
-
-        if (auction.auctionType === "short") {
-            scheduleAuctionEnd(auctionId, auction.countdownEnd);
-        }
+        emitEvent(io, auctionId, "BID_CREATED", bid);
 
         return bid;
     });

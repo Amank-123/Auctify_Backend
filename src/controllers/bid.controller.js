@@ -12,7 +12,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createBid = asyncHandler(async (req, res) => {
+    const io = req.app.get("io");
+
     const data = await createBidDB(
+        io,
         req.body.auctionId,
         req.user._id,
         req.body.amount
