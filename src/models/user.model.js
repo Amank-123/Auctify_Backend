@@ -14,12 +14,14 @@ const userSchema = new Schema(
             minlength: [3, "Name must be at least 3 characters"],
             maxlength: [20, "Name cannot exceed 20 characters"],
             trim: true,
+            default: undefined,
         },
         lastName: {
             type: String,
             minlength: [3, "Last Name must be at least 3 characters"],
             maxlength: [20, "Last Name cannot exceed 20 characters"],
             trim: true,
+            default: undefined,
         },
         email: {
             type: String,

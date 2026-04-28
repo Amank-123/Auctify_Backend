@@ -23,14 +23,12 @@ const getNotificationDB = async (userId) => {
 
 const broadCastNotificationDB = async (payload) => {
     const users = await User.find({ isVerified: true }).select("_id");
-    const result = await Notification.insertMany(
+    const notifications = await Notification.insertMany(
         users.map((user) => ({ userId: user._id, ...payload }))
     );
-    result.forEach((notification) => {
-        io.to(`user_${notification.userId}`).emit(
-            "newNotification",
-            notification
-        );
+    notifications.forEach((notification) => {
+        const room = `user_${notification.userId}`;
+        io.to(room).emit("newNotification", notification);
     });
 
     return users.length;

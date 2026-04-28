@@ -3,19 +3,18 @@ import { ApiError } from "../utils/ApiError.js";
 import uploadToCloudinary from "../utils/cloudinaryUploader.js";
 import { sendOtpDB } from "./otp.service.js";
 
-const registerUserDB = async (data, file) => {
-    console.log("file is undefined : ", file);
-    let mediaURL;
-    if (file) {
-        if (!file.mimetype.startsWith("image"))
-            throw new ApiError(400, "Profile should be type image");
-        const media = await uploadToCloudinary(file.buffer, file.mimetype);
-        mediaURL = media.secure_url;
-    }
+const registerUserDB = async (data) => {
+    // console.log("file is undefined : ", file);
+    // let mediaURL;
+    // if (file) {
+    //     if (!file.mimetype.startsWith("image"))
+    //         throw new ApiError(400, "Profile should be type image");
+    //     const media = await uploadToCloudinary(file.buffer, file.mimetype);
+    //     mediaURL = media.secure_url;
+    // }
     const user = await User.create({
         ...data,
         isVerified: false,
-        profile: mediaURL,
     });
     await sendOtpDB(user.email);
 

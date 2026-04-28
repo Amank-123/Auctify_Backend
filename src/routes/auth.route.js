@@ -19,12 +19,7 @@ const router = Router();
 
 router
     .route("/register")
-    .post(
-        authLimiter,
-        upload.single("profile"),
-        validateData(userRegisterSchema),
-        registerUser
-    );
+    .post(authLimiter, validateData(userRegisterSchema), registerUser);
 router.route("/login").post(authLimiter, loginUser);
 router.route("/refresh").post(authLimiter, refreshAccessToken);
 router.route("/logout").post(protect, protectedApiLimiter, logoutUser);
