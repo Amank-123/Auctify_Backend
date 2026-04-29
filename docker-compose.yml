@@ -47,7 +47,7 @@ services:
             - redis
         environment:
             REDIS_URL: redis://redis:6379
-            MONGO_URI: mongodb://gautamwecodepros_db_user:Rf3fLRhjbIiRdnu4@ac-bqm04il-shard-00-00.awmn6t4.mongodb.net:27017,ac-bqm04il-shard-00-01.awmn6t4.mongodb.net:27017,ac-bqm04il-shard-00-02.awmn6t4.mongodb.net:27017/Bid_Meow?ssl=true&replicaSet=atlas-gkcwaq-shard-0&authSource=admin&appName=Cluster0
+            MONGO_URI: mongodb://Aman:s8lqMhrJfXUXI5GV@ac-htsskhm-shard-00-00.7cbrgvc.mongodb.net:27017,ac-htsskhm-shard-00-01.7cbrgvc.mongodb.net:27017,ac-htsskhm-shard-00-02.7cbrgvc.mongodb.net:27017/?ssl=true&replicaSet=atlas-d7lbt9-shard-0&authSource=admin&appName=Cluster0
         volumes:
             - .:/app
             - /app/node_modules
