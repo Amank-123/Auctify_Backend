@@ -51,9 +51,24 @@ const markAsReadNotificationDB = async (notificationId, userId) => {
     );
     return notification;
 };
+
+const markAllAsReadNotificationDB = async (userId) => {
+    const result = await Notification.updateMany(
+        {
+            userId: userId,
+            isRead: false,
+        },
+        {
+            $set: { isRead: true },
+        }
+    );
+
+    return result;
+};
 export {
     addNotificationDB,
     getNotificationDB,
     broadCastNotificationDB,
     markAsReadNotificationDB,
+    markAllAsReadNotificationDB,
 };

@@ -5,13 +5,15 @@ import {
     getNotification,
     broadCastNotification,
     markAsReadNotification,
+    markAllAsReadNotification,
 } from "../controllers/notification.controller.js";
 
 const router = express.Router();
 
 router.route("/push").post(protect, addNotification);
-router.route("/broadCast").post(protect, broadCastNotification);
-router.route("/:id").post(protect, markAsReadNotification);
 router.route("/").get(protect, getNotification);
+router.route("/broadCast").post(protect, broadCastNotification);
+router.route("/readAll").post(protect, markAllAsReadNotification);
+router.route("/:id").post(protect, markAsReadNotification);
 
 export default router;
