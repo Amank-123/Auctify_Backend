@@ -59,7 +59,9 @@ const createBidDB = async (io, auctionId, userId, amount) => {
 
         await bid.populate("userId");
 
-        emitEvent(io, auctionId, "BID_CREATED", bid);
+        updatedAuction.highestBidId = bid;
+
+        emitEvent(io, auctionId, "BID_CREATED", updatedAuction);
 
         return bid;
     });

@@ -1,15 +1,29 @@
 import connectDB from "../config/database.js";
 await connectDB();
+
 import { Worker } from "bullmq";
-import { endAuctionDB } from "../services/auction.service.js";
+import { endAuctionDB, startAuctionDB } from "../services/auction.service.js";
 import { RedisClient } from "../config/redis.js";
 
 const worker = new Worker(
     "auctionQueue",
     async (job) => {
         const { auctionId } = job.data;
-        console.log("Ending the Auction with worker");
-        await endAuctionDB(auctionId);
+
+        switch (job.name) {
+            case "startAuction":
+                console.log("Starting auction:", auctionId);
+                await startAuctionDB(auctionId);
+                break;
+
+            case "endAuction":
+                console.log("Ending auction:", auctionId);
+                await endAuctionDB(auctionId);
+                break;
+
+            default:
+                console.warn("Unknown job type:", job.name);
+        }
     },
     {
         connection: RedisClient,
@@ -17,9 +31,9 @@ const worker = new Worker(
 );
 
 worker.on("completed", (job) => {
-    console.log(`✅ Job completed: ${job.id}`);
+    console.log(`✅ Job completed: ${job.name} (${job.id})`);
 });
 
 worker.on("failed", (job, err) => {
-    console.error(`❌ Job failed: ${job.id}`, err);
+    console.error(`❌ Job failed: ${job.name} (${job.id})`, err);
 });
