@@ -55,10 +55,26 @@ const fetchWatchListDB = async (userId) => {
     const user = await User.findById(userId).populate("watchList");
     return user.watchList;
 };
+
+const resetPasswordDB = async (userId, oldPass, newPass) => {
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+        throw new ApiError("User not found!");
+    }
+    const isVerified = await user.comparePassword(oldPass);
+
+    if (!isVerified) {
+        return { reset: "Failed" };
+    }
+    user.password = newPass;
+    await user.save();
+    return { reset: "Success" };
+};
 export {
     updateUserDB,
     deleteUserDB,
     getUserDB,
     toggleWatchListDB,
     fetchWatchListDB,
+    resetPasswordDB,
 };

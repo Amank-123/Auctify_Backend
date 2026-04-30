@@ -7,6 +7,7 @@ import {
     deleteUserDB,
     toggleWatchListDB,
     fetchWatchListDB,
+    resetPasswordDB,
 } from "../services/user.service.js";
 
 const getUser = asyncHandler(async (req, res) => {
@@ -43,4 +44,19 @@ const fetchWatchList = asyncHandler(async (req, res) => {
     return ApiResponse(res, 200, "WatchList fetched successfully", data);
 });
 
-export { getUser, updateUser, deleteUser, toggleWatchList, fetchWatchList };
+const resetPassword = asyncHandler(async (req, res) => {
+    const data = await resetPasswordDB(
+        req.user._id,
+        req.body.oldPassword,
+        req.body.newPassword
+    );
+    return ApiResponse(res, data.reset == "Success" ? 200 : 400, data);
+});
+export {
+    getUser,
+    updateUser,
+    deleteUser,
+    toggleWatchList,
+    fetchWatchList,
+    resetPassword,
+};
