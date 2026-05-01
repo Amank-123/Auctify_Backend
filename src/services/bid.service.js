@@ -57,9 +57,13 @@ const createBidDB = async (io, auctionId, userId, amount) => {
         updatedAuction.highestBidId = bid._id;
         await updatedAuction.save({ session });
 
-        await bid.populate("userId");
-        await updatedAuction.populate("sellerId");
-        updatedAuction.highestBidId = bid;
+        await updatedAuction.populate([
+            { path: "sellerId" },
+            {
+                path: "highestBidId",
+                populate: { path: "userId" },
+            },
+        ]);
 
         emitEvent(io, auctionId, "BID_CREATED", updatedAuction);
 
