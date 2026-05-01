@@ -58,7 +58,7 @@ const createBidDB = async (io, auctionId, userId, amount) => {
         await updatedAuction.save({ session });
 
         await bid.populate("userId");
-
+        await updatedAuction.populate("sellerId");
         updatedAuction.highestBidId = bid;
 
         emitEvent(io, auctionId, "BID_CREATED", updatedAuction);

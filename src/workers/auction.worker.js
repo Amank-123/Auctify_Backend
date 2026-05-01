@@ -4,6 +4,7 @@ await connectDB();
 import { Worker } from "bullmq";
 import { endAuctionDB, startAuctionDB } from "../services/auction.service.js";
 import { RedisClient } from "../config/redis.js";
+import { workerIO } from "./worker.socket.js";
 
 const worker = new Worker(
     "auctionQueue",
@@ -13,12 +14,12 @@ const worker = new Worker(
         switch (job.name) {
             case "startAuction":
                 console.log("Starting auction:", auctionId);
-                await startAuctionDB(auctionId);
+                await startAuctionDB(auctionId, workerIO);
                 break;
 
             case "endAuction":
                 console.log("Ending auction:", auctionId);
-                await endAuctionDB(auctionId);
+                await endAuctionDB(auctionId, workerIO);
                 break;
 
             default:

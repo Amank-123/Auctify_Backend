@@ -35,6 +35,9 @@ const loginUserDB = async (email, password) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
+    console.log("Access token: ", accessToken);
+    console.log("Refresh token: ", refreshToken);
+
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 

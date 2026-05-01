@@ -10,6 +10,7 @@ import {
     scheduleAuctionEnd,
     scheduleAuctionStart,
 } from "../utils/scheduleAuctionEnd.js";
+import { emitEvent } from "../socket/events.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
     if (!files || files.length === 0) {
@@ -39,7 +40,7 @@ const createAuctionDB = async (auctionData, sellerId, files) => {
         category: auctionData.category,
     });
 
-    await scheduleAuctionStart(auction._id, startTime);
+    await scheduleAuctionStart(auction._id, auction.startTime);
 
     return auction;
 };
@@ -180,7 +181,7 @@ const updateAuctionDB = async (auctionId, userId, newdata) => {
     return auction;
 };
 
-const startAuctionDB = async (auctionId) => {
+const startAuctionDB = async (auctionId, io = null) => {
     const auction = await Auction.findOneAndUpdate(
         {
             _id: auctionId,
@@ -194,10 +195,18 @@ const startAuctionDB = async (auctionId) => {
         scheduleAuctionEnd(auctionId, auction.endTime);
     }
 
+    await auction.populate("sellerId");
+
+    console.log("Inside IO:", io);
+    if (io) {
+        console.log("Entered in a socket block startAuctionDB");
+        emitEvent(io, auctionId, "AUCTION_STARTED", auction);
+    }
+
     return auction;
 };
 
-const endAuctionDB = async (auctionId) => {
+const endAuctionDB = async (auctionId, io = null) => {
     return await runTransaction(async (session) => {
         const auction = await Auction.findOne({
             _id: auctionId,
@@ -225,10 +234,16 @@ const endAuctionDB = async (auctionId) => {
         }
         auction.winnerId = highestBid.userId;
         auction.status = "ended";
+
         await auction.save({ session });
 
         await auction.populate("sellerId");
-        emitEvent(io, auctionId, "AUCTION_ENDED", auction);
+
+        if (io) {
+            console.log("Entered in a socket block endAuctionDB");
+            emitEvent(io, auctionId, "AUCTION_ENDED", auction);
+        }
+
         return auction;
     });
 };

@@ -8,15 +8,22 @@ import {
     rehydrateAuctionEndJobs,
     rehydrateAuctionStartJobs,
 } from "./utils/scheduleAuctionEnd.js";
+import { Redis } from "ioredis";
+import { createAdapter } from "@socket.io/redis-adapter";
 
 const server = http.createServer(app);
 const Port = process.env.PORT;
 
 export const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: process.env.CORS_ORIGIN,
     },
 });
+
+const pubClient = new Redis(process.env.REDIS_URL);
+const subClient = pubClient.duplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
 
 socketHandler(io);
 
