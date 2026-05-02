@@ -6,6 +6,7 @@ import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
 import { io } from "../index.js";
 import mongoose from "mongoose";
 import { emitEvent } from "../socket/events.js";
+import { addNotificationDB } from "../services/notification.service.js";
 
 const createBidDB = async (io, auctionId, userId, amount) => {
     if (!mongoose.Types.ObjectId.isValid(auctionId))
@@ -66,7 +67,22 @@ const createBidDB = async (io, auctionId, userId, amount) => {
         ]);
 
         emitEvent(io, auctionId, "BID_CREATED", updatedAuction);
-
+        await addNotificationDB(auction.sellerId, {
+            type: "newBid",
+            title: "New Bid Placed",
+            message: `A new bid of ₹${amount} has been placed on your auction.`,
+            auction: auction._id,
+            image: auction.media[0].toString(),
+            ctaLink: `/auction/${auction._id}`,
+        });
+        await addNotificationDB(auction.highestBidId.userId, {
+            type: "newBid",
+            title: "New Bid Placed",
+            message: `You are now out bit with amount ₹${amount} on auction ${auction.name}`,
+            auction: auction._id,
+            image: auction.media[0][0].toString(),
+            ctaLink: `/auction/${auction._id}`,
+        });
         return bid;
     });
 };
