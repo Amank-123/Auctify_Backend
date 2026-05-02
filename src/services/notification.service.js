@@ -14,7 +14,10 @@ const addNotificationDB = async (userId, payload) => {
 };
 
 const getNotificationDB = async (userId) => {
-    const notification = await Notification.find({ userId: userId })
+    const notification = await Notification.find({
+        userId: userId,
+        isDeleted: false,
+    })
         .sort({ createdAt: -1 })
         .limit(50)
         .populate("auction");
@@ -51,6 +54,23 @@ const markAsReadNotificationDB = async (notificationId, userId) => {
     );
     return notification;
 };
+const deleteNotificationDB = async (notificationId, userId) => {
+    const notification = await Notification.findOneAndUpdate(
+        {
+            _id: notificationId,
+            userId: userId,
+        },
+        {
+            $set: {
+                isDeleted: true,
+            },
+        },
+        {
+            returnDocument: "after",
+        }
+    );
+    return notification;
+};
 
 const markAllAsReadNotificationDB = async (userId) => {
     const result = await Notification.updateMany(
@@ -71,4 +91,5 @@ export {
     broadCastNotificationDB,
     markAsReadNotificationDB,
     markAllAsReadNotificationDB,
+    deleteNotificationDB,
 };

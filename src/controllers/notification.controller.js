@@ -6,6 +6,7 @@ import {
     broadCastNotificationDB,
     markAsReadNotificationDB,
     markAllAsReadNotificationDB,
+    deleteNotificationDB,
 } from "../services/notification.service.js";
 
 const addNotification = asyncHandler(async (req, res) => {
@@ -27,6 +28,10 @@ const markAsReadNotification = asyncHandler(async (req, res) => {
     const data = await markAsReadNotificationDB(req.params.id, req.user._id);
     return ApiResponse(res, 200, "Marked as read", data);
 });
+const deleteNotification = asyncHandler(async (req, res) => {
+    const data = await deleteNotificationDB(req.params.id, req.user._id);
+    return ApiResponse(res, 200, "Marked as deleted", data);
+});
 const markAllAsReadNotification = asyncHandler(async (req, res) => {
     const data = await markAllAsReadNotificationDB(req.user._id);
     return ApiResponse(res, 200, "Marked all as read", data);
@@ -37,4 +42,5 @@ export {
     broadCastNotification,
     markAsReadNotification,
     markAllAsReadNotification,
+    deleteNotification,
 };

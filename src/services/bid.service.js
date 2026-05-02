@@ -1,5 +1,6 @@
 import { Bid } from "../models/bid.model.js";
 import { Auction } from "../models/auction.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { runTransaction } from "../utils/transaction.js";
 import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
@@ -11,24 +12,39 @@ import { addNotificationDB } from "../services/notification.service.js";
 const createBidDB = async (io, auctionId, userId, amount) => {
     if (!mongoose.Types.ObjectId.isValid(auctionId))
         throw new ApiError(400, "Invalid auction id");
-
+    const bidder = await User.findById(userId);
     return await runTransaction(async (session) => {
         const auction = await Auction.findById(auctionId)
-            .populate("highestBidId")
+            .populate({
+                path: "highestBidId",
+                populate: {
+                    path: "userId",
+                },
+            })
             .session(session);
+        const image = auction.media?.[0]?.[0] || "";
 
-        // console.log(auction);
-        // console.log(auction.highestBidId);
-        // console.log(userId);
+        // console.log("Auction : " + auction);
+        // console.log("user id(userId)" + userId);
+        // console.log(
+        //     "auction highest bid user id(auction.highestBidId.userId)" +
+        //         auction.highestBidId.userId
+        // );
+        // console.log(
+        //     "auction highest bid (auction.highestBidId)" + auction.highestBidId
+        // );
+        // console.log("auction media (auction.media)" + auction.media);
+        console.log("image" + image);
 
         if (auction.sellerId.toString() === userId.toString()) {
             throw new ApiError(400, "Can't bid in your own auction");
         }
 
-        if (
-            auction.highestBidId &&
-            auction.highestBidId.userId.toString() === userId.toString()
-        ) {
+        const highestBidUserId = auction.highestBidId?.userId?._id
+            ? auction.highestBidId.userId._id.toString()
+            : auction.highestBidId?.userId?.toString();
+
+        if (highestBidUserId === userId.toString()) {
             throw new ApiError(400, "Can't bid against your own bid");
         }
 
@@ -70,19 +86,23 @@ const createBidDB = async (io, auctionId, userId, amount) => {
         await addNotificationDB(auction.sellerId, {
             type: "newBid",
             title: "New Bid Placed",
-            message: `A new bid of ₹${amount} has been placed on your auction.`,
+            message: `A new bid of ₹${amount} has been placed on your auction by ${bidder.username}.`,
             auction: auction._id,
-            image: auction.media[0].toString(),
+            image: image,
             ctaLink: `/auction/${auction._id}`,
         });
-        await addNotificationDB(auction.highestBidId.userId, {
-            type: "newBid",
-            title: "New Bid Placed",
-            message: `You are now out bit with amount ₹${amount} on auction ${auction.name}`,
-            auction: auction._id,
-            image: auction.media[0][0].toString(),
-            ctaLink: `/auction/${auction._id}`,
-        });
+
+        if (auction.highestBidId?.userId) {
+            await addNotificationDB(auction.highestBidId.userId, {
+                type: "outbid",
+                title: "You are outbidded",
+                message: `You are now outbid with ₹${amount} by ${bidder.username}`,
+                auction: auction._id,
+                image: image,
+                ctaLink: `/auction/${auction._id}`,
+            });
+        }
+
         return bid;
     });
 };
