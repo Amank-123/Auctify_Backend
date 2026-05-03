@@ -58,7 +58,7 @@ const createBidDB = async (io, auctionId, userId, amount) => {
             {
                 $set: {
                     currentHighestBid: amount,
-                    countdownEnd: new Date(Date.now() + 30 * 1000),
+                    countdownEnd: new Date(Date.now() + 60 * 1000),
                 },
                 $inc: { bidCount: 1 },
             },
@@ -101,6 +101,10 @@ const createBidDB = async (io, auctionId, userId, amount) => {
                 image: image,
                 ctaLink: `/auction/${auction._id}`,
             });
+        }
+
+        if (updatedAuction.auctionType === "short") {
+            scheduleAuctionEnd(updatedAuction._id, updatedAuction.countdownEnd);
         }
 
         return bid;

@@ -126,6 +126,21 @@ const getAllAuctionsDB = async (filters, options) => {
     const pipeline = [
         { $match: match },
         {
+            $addFields: {
+                statusPriority: {
+                    $switch: {
+                        branches: [
+                            { case: { $eq: ["$status", "active"] }, then: 1 },
+                            { case: { $eq: ["$status", "draft"] }, then: 2 },
+                            { case: { $eq: ["$status", "ended"] }, then: 3 },
+                            { case: { $eq: ["$status", "expired"] }, then: 4 },
+                        ],
+                        default: 5,
+                    },
+                },
+            },
+        },
+        {
             $lookup: {
                 from: "users",
                 localField: "sellerId",
@@ -139,7 +154,14 @@ const getAllAuctionsDB = async (filters, options) => {
                 preserveNullAndEmptyArrays: true,
             },
         },
-        { $sort: { [sortField]: order === "asc" ? 1 : -1 } },
+
+        {
+            $sort: {
+                statusPriority: 1,
+                [sortField]: order === "asc" ? 1 : -1,
+                createdAt: -1,
+            },
+        },
         { $skip: skip },
         { $limit: safeLimit },
     ];
