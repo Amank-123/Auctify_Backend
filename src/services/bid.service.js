@@ -10,41 +10,45 @@ import { emitEvent } from "../socket/events.js";
 import { addNotificationDB } from "../services/notification.service.js";
 
 const createBidDB = async (io, auctionId, userId, amount) => {
-    if (!mongoose.Types.ObjectId.isValid(auctionId))
+    if (!mongoose.Types.ObjectId.isValid(auctionId)) {
         throw new ApiError(400, "Invalid auction id");
+    }
+
     const bidder = await User.findById(userId);
+
+    if (!bidder) {
+        throw new ApiError(404, "Bidder not found");
+    }
+
     return await runTransaction(async (session) => {
         const auction = await Auction.findById(auctionId)
             .populate({
                 path: "highestBidId",
                 populate: {
                     path: "userId",
+                    select: "_id username",
                 },
             })
             .session(session);
-        const image = auction.media?.[0]?.[0] || "";
 
-        // console.log("Auction : " + auction);
-        // console.log("user id(userId)" + userId);
-        // console.log(
-        //     "auction highest bid user id(auction.highestBidId.userId)" +
-        //         auction.highestBidId.userId
-        // );
-        // console.log(
-        //     "auction highest bid (auction.highestBidId)" + auction.highestBidId
-        // );
-        // console.log("auction media (auction.media)" + auction.media);
-        console.log("image" + image);
+        if (!auction) {
+            throw new ApiError(404, "Auction not found");
+        }
+
+        const image = Array.isArray(auction.media?.[0])
+            ? auction.media[0][0]
+            : auction.media?.[0] || "";
 
         if (auction.sellerId.toString() === userId.toString()) {
             throw new ApiError(400, "Can't bid in your own auction");
         }
 
-        const highestBidUserId = auction.highestBidId?.userId?._id
-            ? auction.highestBidId.userId._id.toString()
-            : auction.highestBidId?.userId?.toString();
+        const previousHighestBidderId =
+            auction.highestBidId?.userId?._id?.toString() ||
+            auction.highestBidId?.userId?.toString() ||
+            null;
 
-        if (highestBidUserId === userId.toString()) {
+        if (previousHighestBidderId === userId.toString()) {
             throw new ApiError(400, "Can't bid against your own bid");
         }
 
@@ -60,45 +64,63 @@ const createBidDB = async (io, auctionId, userId, amount) => {
                     currentHighestBid: amount,
                     countdownEnd: new Date(Date.now() + 30 * 1000),
                 },
-                $inc: { bidCount: 1 },
+                $inc: {
+                    bidCount: 1,
+                },
             },
-            { returnDocument: "after", session }
+            {
+                new: true,
+                session,
+            }
         );
 
-        if (!updatedAuction)
-            throw new ApiError(400, "Bid failed (outbid or auction expired)");
+        if (!updatedAuction) {
+            throw new ApiError(
+                400,
+                "Bid failed (outbid already or auction expired)"
+            );
+        }
 
-        const bid = new Bid({ auctionId, userId, amount });
+        const bid = new Bid({
+            auctionId,
+            userId,
+            amount,
+        });
+
         await bid.save({ session });
 
         updatedAuction.highestBidId = bid._id;
         await updatedAuction.save({ session });
 
         await updatedAuction.populate([
-            { path: "sellerId" },
+            { path: "sellerId", select: "_id username" },
             {
                 path: "highestBidId",
-                populate: { path: "userId" },
+                populate: {
+                    path: "userId",
+                    select: "_id username",
+                },
             },
         ]);
 
         emitEvent(io, auctionId, "BID_CREATED", updatedAuction);
-        await addNotificationDB(auction.sellerId, {
+
+        await addNotificationDB(io, auction.sellerId.toString(), {
             type: "newBid",
             title: "New Bid Placed",
             message: `A new bid of ₹${amount} has been placed on your auction by ${bidder.username}.`,
             auction: auction._id,
-            image: image,
+            image,
             ctaLink: `/auction/${auction._id}`,
         });
 
-        if (auction.highestBidId?.userId) {
-            await addNotificationDB(auction.highestBidId.userId, {
+        if (previousHighestBidderId) {
+            await addNotificationDB(io, previousHighestBidderId, {
                 type: "outbid",
-                title: "You are outbidded",
-                message: `You are now outbid with ₹${amount} by ${bidder.username}`,
+                title: "You are outbid",
+                message: `You are now outbid with ₹${amount} by ${bidder.username}.`,
                 auction: auction._id,
-                image: image,
+                image,
                 ctaLink: `/auction/${auction._id}`,
             });
         }

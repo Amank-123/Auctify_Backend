@@ -1,8 +1,8 @@
 import { Notification } from "../models/notification.model.js";
 import { User } from "../models/user.model.js";
-import { io } from "../index.js";
+// import { io } from "../index.js";
 
-const addNotificationDB = async (userId, payload) => {
+const addNotificationDB = async (io, userId, payload) => {
     const notification = await Notification.create({
         userId: userId,
         ...payload,
@@ -24,7 +24,7 @@ const getNotificationDB = async (userId) => {
     return notification;
 };
 
-const broadCastNotificationDB = async (payload) => {
+const broadCastNotificationDB = async (io, payload) => {
     const users = await User.find({ isVerified: true }).select("_id");
     const notifications = await Notification.insertMany(
         users.map((user) => ({ userId: user._id, ...payload }))

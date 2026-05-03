@@ -10,6 +10,7 @@ import {
 } from "./utils/scheduleAuctionEnd.js";
 import { Redis } from "ioredis";
 import { createAdapter } from "@socket.io/redis-adapter";
+import { messageSocket } from "./socket/message.socket.js";
 
 const server = http.createServer(app);
 const Port = process.env.PORT;
@@ -26,8 +27,8 @@ const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));
 
 socketHandler(io);
-
 initSocket(io);
+messageSocket(io);
 
 app.set("io", io);
 

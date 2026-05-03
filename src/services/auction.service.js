@@ -11,6 +11,8 @@ import {
     scheduleAuctionStart,
 } from "../utils/scheduleAuctionEnd.js";
 import { emitEvent } from "../socket/events.js";
+import { addNotificationDB } from "../services/notification.service.js";
+import { ChatRoom } from "../models/chatRoom.model.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
     if (!files || files.length === 0) {
@@ -220,27 +222,67 @@ const endAuctionDB = async (auctionId, io = null) => {
         if (!auction.isActive()) {
             throw new ApiError(400, "Auction is not active");
         }
+
         auction.endedTime = new Date();
 
         const highestBid = await Bid.findById(auction.highestBidId).session(
             session
         );
 
+        // No bids
         if (!highestBid) {
             auction.status = "expired";
 
             await auction.save({ session });
+
             return auction;
         }
+
+        // Winner found
         auction.winnerId = highestBid.userId;
         auction.status = "ended";
 
         await auction.save({ session });
 
+        // Create / reuse room
+        const room = await ChatRoom.findOneAndUpdate(
+            {
+                auctionId: auction._id,
+            },
+            {
+                auctionId: auction._id,
+                sellerId: auction.sellerId,
+                buyerId: highestBid.userId,
+                isActive: true,
+            },
+            {
+                upsert: true,
+                new: true,
+                session,
+            }
+        );
+
         await auction.populate("sellerId");
 
+        // Winner notify
+        await addNotificationDB(io, highestBid.userId.toString(), {
+            type: "won",
+            title: "You won the auction!",
+            message: `Congratulations! You won ${auction.title}. Start chat with seller.`,
+            auction: auction._id,
+            ctaLink: `/chat/${room._id}`,
+        });
+
+        // Seller notify
+        await addNotificationDB(io, auction.sellerId._id.toString(), {
+            type: "sold",
+            title: "Your item has been sold!",
+            message: `${auction.title} has ended successfully. Contact buyer now.`,
+            auction: auction._id,
+            ctaLink: `/chat/${room._id}`,
+        });
+
         if (io) {
-            console.log("Entered in a socket block endAuctionDB");
             emitEvent(io, auctionId, "AUCTION_ENDED", auction);
         }
 

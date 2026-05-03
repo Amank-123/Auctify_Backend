@@ -17,6 +17,7 @@ const notificationSchema = new Schema(
                 "newBid",
                 "endingSoon",
                 "system",
+                "sold",
                 "sponsored",
             ],
             required: true,
