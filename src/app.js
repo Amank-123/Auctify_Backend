@@ -11,7 +11,9 @@ import bidRouter from "./routes/bid.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import OTPRouter from "./routes/otp.route.js";
 import ChatBotRouter from "./routes/chatbot.route.js";
+import ChatRoomRouter from "./routes/chatRoom.route.js";
 import NotificationRouter from "./routes/notification.route.js";
+import messageRouter from "./routes/message.route.js";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
@@ -51,6 +53,8 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/otp", OTPRouter);
 app.use("/api/chat", ChatBotRouter);
 app.use("/api/notify", NotificationRouter);
+app.use("/api/Room", ChatRoomRouter);
+app.use("/api/message", messageRouter);
 
 //All routes should be above the error handler middleware
 app.use(errorHandler);
