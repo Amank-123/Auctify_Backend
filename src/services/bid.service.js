@@ -92,18 +92,20 @@ const createBidDB = async (io, auctionId, userId, amount) => {
         updatedAuction.highestBidId = bid._id;
         await updatedAuction.save({ session });
 
-        await updatedAuction.populate([
-            { path: "sellerId", select: "_id username" },
-            {
-                path: "highestBidId",
-                populate: {
-                    path: "userId",
-                    select: "_id username",
-                },
-            },
-        ]);
+        // await updatedAuction.populate([
+        //     { path: "sellerId", select: "_id username" },
+        //     {
+        //         path: "highestBidId",
+        //         populate: {
+        //             path: "userId",
+        //         },
+        //     },
+        // ]);
+        // console.log("Updated auction from sevice :", updatedAuction);
 
-        emitEvent(io, auctionId, "BID_CREATED", updatedAuction);
+        await bid.populate("userId auctionId");
+
+        emitEvent(io, auctionId, "BID_CREATED", bid);
 
         await addNotificationDB(io, auction.sellerId.toString(), {
             type: "newBid",

@@ -38,12 +38,9 @@ export const sendMessageDB = async (io, userId, roomId, text) => {
         lastMessageAt: new Date(),
     });
 
-    const full = await Message.findById(msg._id).populate(
-        "senderId",
-        "username profile"
-    );
+    msg.populate("senderId", "username profile");
 
-    io.to(roomId).emit("receive_message", full);
+    io.to(roomId).emit("receive_message", msg);
 
-    return full;
+    return msg;
 };
