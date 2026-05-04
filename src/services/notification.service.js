@@ -20,14 +20,14 @@ const getNotificationDB = async (userId) => {
     })
         .sort({ createdAt: -1 })
         .limit(50)
-        .populate("auction");
+        .populate("auction"); 
     return notification;
 };
 
-const broadCastNotificationDB = async (io, payload) => {
+const broadCastNotificationDB = async (io, payload,image) => {
     const users = await User.find({ isVerified: true }).select("_id");
     const notifications = await Notification.insertMany(
-        users.map((user) => ({ userId: user._id, ...payload }))
+        users.map((user) => ({ userId: user._id, ...payload, image }))
     );
     notifications.forEach((notification) => {
         const room = `user_${notification.userId}`;

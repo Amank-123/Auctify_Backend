@@ -26,12 +26,12 @@ const getNotification = asyncHandler(async (req, res) => {
 const broadCastNotification = asyncHandler(async (req, res) => {
     const io = req.app.get("io");
 
-    const data = await broadCastNotificationDB(io, req.body);
+    const data = await broadCastNotificationDB(io, req.body,req.file);
 
     return ApiResponse(res, 200, "notification Broadcasted successfully", data);
 });
 
-const markAsReadNotification = asyncHandler(async (req, res) => {
+const markAsReadNotification = asyncHandler(async (req, res) => { 
     const data = await markAsReadNotificationDB(req.params.id, req.user._id);
 
     return ApiResponse(res, 200, "Marked as read", data);

@@ -9,12 +9,13 @@ import {
     deleteNotification,
 } from "../controllers/notification.controller.js";
 import isAdmin from "../middlewares/autherised.js";
+import { upload } from "../middlewares/multer.js";
 
 const router = express.Router();
 
 router.route("/push").post(protect, addNotification);
 router.route("/").get(protect, getNotification);
-router.route("/broadCast").post(protect, isAdmin, broadCastNotification);
+router.route("/broadCast").post(protect, upload.single("image"), isAdmin, broadCastNotification);
 router.route("/readAll").post(protect, markAllAsReadNotification);
 router.route("/:id").post(protect, markAsReadNotification);
 router.route("/delete/:id").post(protect, deleteNotification);
