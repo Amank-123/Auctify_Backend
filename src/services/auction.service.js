@@ -292,7 +292,7 @@ const endAuctionDB = async (auctionId, io = null) => {
             title: "You won the auction!",
             message: `Congratulations! You won ${auction.title}. Start chat with seller.`,
             auction: auction._id,
-            ctaLink: `/chat/${room._id}`,
+            ctaLink: `/auction/room`,
         });
 
         // Seller notify
@@ -301,7 +301,7 @@ const endAuctionDB = async (auctionId, io = null) => {
             title: "Your item has been sold!",
             message: `${auction.title} has ended successfully. Contact buyer now.`,
             auction: auction._id,
-            ctaLink: `/chat/${room._id}`,
+            ctaLink: `/auction/room`,
         });
 
         if (io) {
