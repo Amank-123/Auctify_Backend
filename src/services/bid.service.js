@@ -4,7 +4,6 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { runTransaction } from "../utils/transaction.js";
 import { scheduleAuctionEnd } from "../utils/scheduleAuctionEnd.js";
-import { io } from "../index.js";
 import mongoose from "mongoose";
 import { emitEvent } from "../socket/events.js";
 import { addNotificationDB } from "../services/notification.service.js";
