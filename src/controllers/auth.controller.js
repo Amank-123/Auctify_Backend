@@ -7,7 +7,7 @@ import { verifyRefreshToken } from "../utils/jwtVerification.utils.js";
 const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "None",
 };
 
 const registerUser = asyncHandler(async (req, res) => {
