@@ -102,7 +102,15 @@ const createBidDB = async (io, auctionId, userId, amount) => {
         // ]);
         // console.log("Updated auction from sevice :", updatedAuction);
 
-        await bid.populate("userId auctionId sellerId");
+        await bid.populate([
+            { path: "sellerId" },
+            {
+                path: "auctionId",
+                populate: {
+                    path: "sellerId",
+                },
+            },
+        ]);
 
         emitEvent(io, auctionId, "BID_CREATED", bid);
 

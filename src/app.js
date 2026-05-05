@@ -44,12 +44,6 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 //Routes middlewares
-// Express example
-app.get("/api/time", (req, res) => {
-    res.json({
-        serverTime: Date.now(),
-    });
-});
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/auction", auctionRouter);
@@ -61,6 +55,13 @@ app.use("/api/chat", ChatBotRouter);
 app.use("/api/notify", NotificationRouter);
 app.use("/api/Room", ChatRoomRouter);
 app.use("/api/message", messageRouter);
+
+//Server Time Route
+app.get("/api/time", (req, res) => {
+    res.json({
+        serverTime: Date.now(),
+    });
+});
 
 //All routes should be above the error handler middleware
 app.use(errorHandler);
