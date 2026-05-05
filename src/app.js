@@ -44,6 +44,12 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 //Routes middlewares
+// Express example
+app.get("/api/time", (req, res) => {
+    res.json({
+        serverTime: Date.now(),
+    });
+});
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/auction", auctionRouter);
