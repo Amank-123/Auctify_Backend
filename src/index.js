@@ -18,6 +18,7 @@ const Port = process.env.PORT;
 export const io = new Server(server, {
     cors: {
         origin: process.env.CORS_ORIGIN,
+        credentials: true,
     },
 });
 
