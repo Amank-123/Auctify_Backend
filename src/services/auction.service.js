@@ -13,6 +13,7 @@ import {
 import { emitEvent } from "../socket/events.js";
 import { addNotificationDB } from "../services/notification.service.js";
 import { ChatRoom } from "../models/chatRoom.model.js";
+import { Order } from "../models/order.model.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
     if (!files || files.length === 0) {
@@ -57,41 +58,18 @@ const getAllAuctionsDB = async (filters, options) => {
         category,
         auctionType,
     } = filters;
+
     const { page, limit, order, sortBy } = options;
 
     const safePage = Math.max(1, Number(page) || 1);
     const safeLimit = Math.min(50, Math.max(1, Number(limit) || 10));
+
     const skip = (safePage - 1) * safeLimit;
 
-    let match = {};
+    const match = {};
 
-    if (status) match.status = status;
-
-    const ALLOWED_CATEGORIES = [
-        "electronics",
-        "fashion",
-        "jewelry",
-        "watches",
-        "vehicles",
-        "real_estate",
-        "art",
-        "collectibles",
-        "furniture",
-        "books",
-        "sports",
-        "gaming",
-        "music",
-        "antiques",
-        "toys",
-        "luxury",
-        "industrial",
-        "other",
-    ];
-
-    const normalizedCategory = category?.toLowerCase().trim();
-
-    if (normalizedCategory && ALLOWED_CATEGORIES.includes(normalizedCategory)) {
-        match.category = normalizedCategory;
+    if (status) {
+        match.status = status;
     }
 
     if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) {
@@ -99,14 +77,16 @@ const getAllAuctionsDB = async (filters, options) => {
     }
 
     if (auctionType) {
-        match.auctionType = auctionType?.toLowerCase().trim();
+        match.auctionType = auctionType.toLowerCase().trim();
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {
         match.currentHighestBid = {};
+
         if (minPrice !== undefined) {
             match.currentHighestBid.$gte = Number(minPrice);
         }
+
         if (maxPrice !== undefined) {
             match.currentHighestBid.$lte = Number(maxPrice);
         }
@@ -123,27 +103,43 @@ const getAllAuctionsDB = async (filters, options) => {
     }
 
     const allowedSortFields = ["createdAt", "currentHighestBid", "name"];
+
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
 
-    console.log(match);
-
     const pipeline = [
-        { $match: match },
         {
-            $addFields: {
-                statusPriority: {
-                    $switch: {
-                        branches: [
-                            { case: { $eq: ["$status", "active"] }, then: 1 },
-                            { case: { $eq: ["$status", "draft"] }, then: 2 },
-                            { case: { $eq: ["$status", "ended"] }, then: 3 },
-                            { case: { $eq: ["$status", "expired"] }, then: 4 },
-                        ],
-                        default: 5,
-                    },
-                },
+            $match: match,
+        },
+
+        /* CATEGORY LOOKUP */
+        {
+            $lookup: {
+                from: "categories",
+                localField: "category",
+                foreignField: "_id",
+                as: "category",
             },
         },
+
+        {
+            $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+
+        /* CATEGORY FILTER */
+        ...(category
+            ? [
+                  {
+                      $match: {
+                          "category.name": category.toLowerCase().trim(),
+                      },
+                  },
+              ]
+            : []),
+
+        /* SELLER LOOKUP */
         {
             $lookup: {
                 from: "users",
@@ -152,6 +148,7 @@ const getAllAuctionsDB = async (filters, options) => {
                 as: "seller",
             },
         },
+
         {
             $unwind: {
                 path: "$seller",
@@ -159,6 +156,44 @@ const getAllAuctionsDB = async (filters, options) => {
             },
         },
 
+        /* STATUS PRIORITY */
+        {
+            $addFields: {
+                statusPriority: {
+                    $switch: {
+                        branches: [
+                            {
+                                case: {
+                                    $eq: ["$status", "active"],
+                                },
+                                then: 1,
+                            },
+                            {
+                                case: {
+                                    $eq: ["$status", "draft"],
+                                },
+                                then: 2,
+                            },
+                            {
+                                case: {
+                                    $eq: ["$status", "ended"],
+                                },
+                                then: 3,
+                            },
+                            {
+                                case: {
+                                    $eq: ["$status", "expired"],
+                                },
+                                then: 4,
+                            },
+                        ],
+                        default: 5,
+                    },
+                },
+            },
+        },
+
+        /* SORT */
         {
             $sort: {
                 statusPriority: 1,
@@ -166,8 +201,14 @@ const getAllAuctionsDB = async (filters, options) => {
                 createdAt: -1,
             },
         },
-        { $skip: skip },
-        { $limit: safeLimit },
+
+        {
+            $skip: skip,
+        },
+
+        {
+            $limit: safeLimit,
+        },
     ];
 
     return await Auction.aggregate(pipeline);
@@ -265,6 +306,24 @@ const endAuctionDB = async (auctionId, io = null) => {
         // Winner found
         auction.winnerId = highestBid.userId;
         auction.status = "ended";
+        const order = await Order.create(
+            [
+                {
+                    auctionId: auction._id,
+
+                    finalPrice: highestBid.amount,
+
+                    buyerId: highestBid.userId,
+
+                    sellerId: auction.sellerId,
+
+                    paymentStatus: "pending",
+
+                    orderStatus: "awaiting_payment",
+                },
+            ],
+            { session }
+        );
 
         await auction.save({ session });
 
@@ -292,7 +351,7 @@ const endAuctionDB = async (auctionId, io = null) => {
         await addNotificationDB(io, highestBid.userId.toString(), {
             type: "won",
             title: "You won the auction!",
-            message: `Congratulations! You won ${auction.title}. Start chat with seller.`,
+            message: `Congratulations! You won ${auction.title}. Complete payment now.`,
             auction: auction._id,
             ctaLink: `/auction/room`,
         });

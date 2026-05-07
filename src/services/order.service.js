@@ -89,7 +89,10 @@ const updateOrderDB = async (orderId, update) => {
 };
 
 const singleOrderDB = async (orderId, userId) => {
-    const order = await Order.findOne({ _id: orderId, buyerId: userId });
+    const order = await Order.findOne({ _id: orderId, buyerId: userId })
+        .populate("auctionId")
+        .populate("buyerId")
+        .populate("sellerId");
     if (!order) throw new ApiError(404, "Order not found");
     return order;
 };
