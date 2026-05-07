@@ -26,26 +26,7 @@ const auctionCreateValidator = z
 
         auctionType: z.enum(["short", "long"]).default("long"),
 
-        category: z.enum([
-            "electronics",
-            "fashion",
-            "jewelry",
-            "watches",
-            "vehicles",
-            "real_estate",
-            "art",
-            "collectibles",
-            "furniture",
-            "books",
-            "sports",
-            "gaming",
-            "music",
-            "antiques",
-            "toys",
-            "luxury",
-            "industrial",
-            "other",
-        ]),
+        category: z.string().min(1, "Category is required"),
     })
     .strict()
     .superRefine((data, ctx) => {

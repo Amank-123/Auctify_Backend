@@ -13,6 +13,7 @@ import OTPRouter from "./routes/otp.route.js";
 import ChatBotRouter from "./routes/chatbot.route.js";
 import ChatRoomRouter from "./routes/chatRoom.route.js";
 import NotificationRouter from "./routes/notification.route.js";
+import CategoryRouter from "./routes/categories.route.js";
 import messageRouter from "./routes/message.route.js";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
@@ -35,34 +36,36 @@ app.use(express.json());
 
 app.use((req, res, next) => {
     if (req.body) req.body = mongoSanitize.sanitize(req.body);
-    if (req.params) req.params = mongoSanitize.sanitize(req.params);
-    next();
-});
+        if (req.params) req.params = mongoSanitize.sanitize(req.params);
+            next();
+            });
 
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(passport.initialize());
+            app.use(express.urlencoded({ extended: true }));
+            app.use(cookieParser());
+            app.use(passport.initialize());
 
-//Routes middlewares
-app.use("/api/user", userRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/auction", auctionRouter);
-app.use("/api/bid", bidRouter);
-app.use("/api/order", orderRouter);
-app.use("/api/payment", paymentRouter);
-app.use("/api/otp", OTPRouter);
-app.use("/api/chat", ChatBotRouter);
-app.use("/api/notify", NotificationRouter);
-app.use("/api/Room", ChatRoomRouter);
-app.use("/api/message", messageRouter);
+            //Routes middlewares
+            app.use("/api/user", userRouter);
+            app.use("/api/auth", authRouter);
+            app.use("/api/auction", auctionRouter);
+            app.use("/api/bid", bidRouter);
+            app.use("/api/order", orderRouter);
+            app.use("/api/payment", paymentRouter);
+            app.use("/api/otp", OTPRouter);
+            app.use("/api/chat", ChatBotRouter);
+            app.use("/api/notify", NotificationRouter);
+            app.use("/api/Room", ChatRoomRouter);
+            app.use("/api/message", messageRouter);
+            app.use("/api/category", CategoryRouter);
 
-//Server Time Route
-app.get("/api/time", (req, res) => {
-    res.json({
-        serverTime: Date.now(),
-    });
-});
+            //Server Time Route
+            app.get("/api/time", (req, res) => {
+                res.json({
+                        serverTime: Date.now(),
+                            });
+                            });
 
-//All routes should be above the error handler middleware
-app.use(errorHandler);
-export { app };
+                            //All routes should be above the error handler middleware
+                            app.use(errorHandler);
+                            export { app };
+                            
