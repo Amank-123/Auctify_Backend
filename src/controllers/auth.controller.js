@@ -57,8 +57,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 const resetForgottenPassword = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    if (password.length <= 7)
-        throw new ApiError(400, "Password must contain atleast 8 characters");
 
     const user = await resetForgottenPasswordDB(email, password);
     if (!user) throw new ApiError(404, "User not found check email");
