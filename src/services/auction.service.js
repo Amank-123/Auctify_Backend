@@ -63,7 +63,7 @@ const getAllAuctionsDB = async (filters, options) => {
     const safeLimit = Math.min(50, Math.max(1, Number(limit) || 10));
     const skip = (safePage - 1) * safeLimit;
 
-    const match = {};
+    let match = {};
 
     if (status) match.status = status;
 
@@ -99,7 +99,7 @@ const getAllAuctionsDB = async (filters, options) => {
     }
 
     if (auctionType) {
-        match.auctionType = auctionType;
+        match.auctionType = auctionType?.toLowerCase().trim();
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {
@@ -124,6 +124,8 @@ const getAllAuctionsDB = async (filters, options) => {
 
     const allowedSortFields = ["createdAt", "currentHighestBid", "name"];
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+
+    console.log(match);
 
     const pipeline = [
         { $match: match },

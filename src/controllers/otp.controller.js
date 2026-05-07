@@ -1,6 +1,11 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { verifyOtpDB, sendOtpDB } from "../services/otp.service.js";
+import {
+    verifyOtpDB,
+    sendOtpDB,
+    verifyForgotPasswordOTPDB,
+} from "../services/otp.service.js";
 import { User } from "../models/user.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 const resendOTP = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
@@ -16,7 +21,7 @@ const options = {
 
 const verifyOTP = asyncHandler(async (req, res) => {
     const { email, otp } = req.body;
-    console.log(email, otp);
+
     const { user, accessToken, refreshToken } = await verifyOtpDB(email, otp);
 
     return res
@@ -26,4 +31,12 @@ const verifyOTP = asyncHandler(async (req, res) => {
         .json({ success: true, message: "Verified successfully", data: user });
 });
 
-export { verifyOTP, resendOTP };
+const verifyForgotPasswordOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    const user = await verifyForgotPasswordOTPDB(email, otp);
+
+    return ApiResponse(res, 200, "Otp verified");
+});
+
+export { verifyOTP, verifyForgotPasswordOTP, resendOTP };

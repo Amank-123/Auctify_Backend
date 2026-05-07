@@ -1,8 +1,14 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { loginUserDB, registerUserDB } from "../services/auth.service.js";
+import {
+    loginUserDB,
+    registerUserDB,
+    forgotPasswordDB,
+    resetForgottenPasswordDB,
+} from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
 import { verifyRefreshToken } from "../utils/jwtVerification.utils.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const options = {
     httpOnly: true,
@@ -40,6 +46,24 @@ const loginUser = asyncHandler(async (req, res) => {
             message: "User logged in successfully",
             data: user,
         });
+});
+
+const forgotPassword = asyncHandler(async (req, res) => {
+    const user = await forgotPasswordDB(req.body.email);
+    if (!user) throw new ApiError(404, "User not found check email");
+
+    return ApiResponse(res, 200, "Reset Otp sent successfully");
+});
+
+const resetForgottenPassword = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+    if (password.length <= 7)
+        throw new ApiError(400, "Password must contain atleast 8 characters");
+
+    const user = await resetForgottenPasswordDB(email, password);
+    if (!user) throw new ApiError(404, "User not found check email");
+
+    return ApiResponse(res, 200, "Password changed successfully");
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -110,4 +134,6 @@ export {
     refreshAccessToken,
     logoutUser,
     oauthCallback,
+    resetForgottenPassword,
+    forgotPassword,
 };

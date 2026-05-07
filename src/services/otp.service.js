@@ -22,7 +22,7 @@ const sendOtpDB = async (email) => {
 
 const verifyOtpDB = async (email, otp) => {
     const record = await Otp.findOne({ email });
-    if (!record) throw new ApiError("OTP not found");
+    if (!record) throw new ApiError(404, "OTP not found");
     if (record.expiresAt < Date.now()) throw new ApiError("OTP is expired");
     const isMatch = await bcrypt.compare(otp, record.otp);
     if (!isMatch) throw new Error("Invalid OTP");
@@ -43,4 +43,23 @@ const verifyOtpDB = async (email, otp) => {
     return { user, accessToken, refreshToken };
 };
 
-export { verifyOtpDB, sendOtpDB };
+const verifyForgotPasswordOTPDB = async (email, otp) => {
+    console.log(`${email}, ${otp}`);
+
+    const record = await Otp.findOne({ email });
+    if (!record) throw new ApiError(404, "OTP not found");
+    if (record.expiresAt < Date.now()) throw new ApiError("OTP is expired");
+    const isMatch = await bcrypt.compare(otp, record.otp);
+    if (!isMatch) throw new Error("Invalid OTP");
+
+    const user = await User.findOne({ email });
+
+    user.resetPasswordVerified = true;
+
+    await user.save({ runValidators: false });
+
+    await Otp.deleteMany({ email });
+    return user;
+};
+
+export { verifyOtpDB, sendOtpDB, verifyForgotPasswordOTPDB };

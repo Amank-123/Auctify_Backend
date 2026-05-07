@@ -5,6 +5,8 @@ import {
     refreshAccessToken,
     logoutUser,
     oauthCallback,
+    forgotPassword,
+    resetForgottenPassword,
 } from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import passport from "../config/passport.js";
@@ -22,6 +24,9 @@ router
     .post(authLimiter, validateData(userRegisterSchema), registerUser);
 router.route("/login").post(authLimiter, loginUser);
 router.route("/refresh").post(authLimiter, refreshAccessToken);
+router.route("/forgot-password").post(authLimiter, forgotPassword);
+router.route("/reset-password").post(authLimiter, resetForgottenPassword);
+
 router.route("/logout").post(protect, protectedApiLimiter, logoutUser);
 
 //google Oauth routes

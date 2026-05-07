@@ -42,6 +42,7 @@ const getAllAuctions = asyncHandler(async (req, res) => {
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         sellerId,
         search,
+        auctionType,
     };
     const options = {
         page: page ? Number(page) : 1,

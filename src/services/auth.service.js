@@ -44,6 +44,31 @@ const loginUserDB = async (email, password) => {
     return { user, accessToken, refreshToken };
 };
 
+const forgotPasswordDB = async (email) => {
+    const user = await User.find({ email });
+    if (!user) throw new ApiError(404, "User not found check email");
+    console.log(email);
+
+    await sendOtpDB(email);
+
+    return user;
+};
+
+const resetForgottenPasswordDB = async (email, password) => {
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) throw new ApiError(404, "User not found check email");
+    console.log(user);
+
+    if (!user.resetPasswordVerified)
+        throw new ApiError(400, "Not verified to change the password");
+
+    user.password = password;
+    user.resetPasswordVerified = false;
+
+    await user.save({ validateBeforeSave: false });
+    return user;
+};
+
 const findOrCreateOAuthUser = async (profile) => {
     const email = profile.emails?.[0]?.value;
 
@@ -99,4 +124,6 @@ export {
     findOrCreateOAuthUser,
     findOrCreateGithubUser,
     registerUserDB,
+    forgotPasswordDB,
+    resetForgottenPasswordDB,
 };

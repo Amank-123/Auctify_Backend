@@ -79,6 +79,10 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+        resetPasswordVerified: {
+            type: Boolean,
+            default: false,
+        },
         watchList: [{ type: Schema.Types.ObjectId, ref: "Auction" }],
     },
     {
