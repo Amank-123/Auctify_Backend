@@ -15,6 +15,7 @@ import ChatRoomRouter from "./routes/chatRoom.route.js";
 import NotificationRouter from "./routes/notification.route.js";
 import CategoryRouter from "./routes/categories.route.js";
 import messageRouter from "./routes/message.route.js";
+import bannerRouter from "./routes/banner.route.js";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
@@ -57,6 +58,7 @@ app.use("/api/notify", NotificationRouter);
 app.use("/api/Room", ChatRoomRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/category", CategoryRouter);
+app.use("/api/banner", bannerRouter);
 
 //Server Time Route
 app.get("/api/time", (req, res) => {
