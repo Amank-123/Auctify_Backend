@@ -68,18 +68,22 @@ const getAllAuctionsDB = async (filters, options) => {
 
     const match = {};
 
+    /* STATUS */
     if (status) {
         match.status = status;
     }
 
+    /* SELLER */
     if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) {
         match.sellerId = new mongoose.Types.ObjectId(sellerId);
     }
 
+    /* AUCTION TYPE */
     if (auctionType) {
-        match.auctionType = auctionType.toLowerCase().trim();
+        match.auctionType = auctionType.trim().toLowerCase();
     }
 
+    /* PRICE FILTER */
     if (minPrice !== undefined || maxPrice !== undefined) {
         match.currentHighestBid = {};
 
@@ -92,12 +96,13 @@ const getAllAuctionsDB = async (filters, options) => {
         }
     }
 
+    /* SEARCH */
     if (search) {
         const escapeRegex = (text) =>
             text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
         match.name = {
-            $regex: escapeRegex(search),
+            $regex: escapeRegex(search.trim()),
             $options: "i",
         };
     }
@@ -133,7 +138,10 @@ const getAllAuctionsDB = async (filters, options) => {
             ? [
                   {
                       $match: {
-                          "category.name": category.toLowerCase().trim(),
+                          "category.name": {
+                              $regex: `^${category.trim()}$`,
+                              $options: "i",
+                          },
                       },
                   },
               ]
@@ -163,27 +171,19 @@ const getAllAuctionsDB = async (filters, options) => {
                     $switch: {
                         branches: [
                             {
-                                case: {
-                                    $eq: ["$status", "active"],
-                                },
+                                case: { $eq: ["$status", "active"] },
                                 then: 1,
                             },
                             {
-                                case: {
-                                    $eq: ["$status", "draft"],
-                                },
+                                case: { $eq: ["$status", "draft"] },
                                 then: 2,
                             },
                             {
-                                case: {
-                                    $eq: ["$status", "ended"],
-                                },
+                                case: { $eq: ["$status", "ended"] },
                                 then: 3,
                             },
                             {
-                                case: {
-                                    $eq: ["$status", "expired"],
-                                },
+                                case: { $eq: ["$status", "expired"] },
                                 then: 4,
                             },
                         ],
