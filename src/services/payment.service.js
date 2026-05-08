@@ -23,6 +23,10 @@ const verifyPaymentDB = async (data) => {
 
     // 3. update status
     payment.status = "completed";
+    await Order.findByIdAndUpdate(payment.orderId, {
+        paymentStatus: "completed",
+        orderStatus: "confirmed",
+    });
 
     // 4. store both ids (IMPORTANT)
     payment.gateway.orderId = razorpay_order_id;
@@ -38,12 +42,17 @@ const createPaymentDB = async (data, userId) => {
     try {
         console.log("data obj", data);
         const paymentExists = await Payment.findOne({ orderId: data.orderId });
-        if (paymentExists) throw new ApiError(403, "payment already exists");
+        if (paymentExists) {
+            throw new ApiError(403, "payment already exists");
+        }
 
         const order = await Order.findById(data.orderId);
-        console.log("order onj:", order);
         if (!order) throw new ApiError(403, "Order not found");
         // ✅ Create Razorpay order
+
+        if (order.orderStatus === "cancelled")
+            throw new ApiError(403, "Order is cancelled you can't pay");
+
         const razorOrder = await razorpay.orders.create({
             amount: order.finalPrice * 100,
             currency: "INR",
@@ -65,8 +74,10 @@ const createPaymentDB = async (data, userId) => {
 
         return { rzrPay, razorOrder };
     } catch (err) {
-        console.log(err);
-        throw err;
+        throw new ApiError(
+            err?.statusCode || 400,
+            err?.error?.description || "Payment failed"
+        );
     }
 };
 

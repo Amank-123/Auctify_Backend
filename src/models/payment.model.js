@@ -33,7 +33,18 @@ const paymentSchema = new Schema(
         },
         paymentMethod: {
             type: String,
-            enum: ["card", "upi", "netbanking"],
+            enum: [
+                "card",
+                "upi",
+                "netbanking",
+                "wallet",
+                "emi",
+                "paylater",
+                "bank_transfer",
+                "cardless_emi",
+                "cash",
+                "international",
+            ],
             required: true,
         },
 
