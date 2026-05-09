@@ -53,9 +53,21 @@ const paymentSchema = new Schema(
                 type: String,
                 required: true,
             },
+
+            // razorpay order id
             transactionId: {
                 type: String,
                 required: true,
+            },
+
+            // razorpay payment id
+            paymentId: {
+                type: String,
+            },
+
+            // refund transaction id
+            refundId: {
+                type: String,
             },
         },
 

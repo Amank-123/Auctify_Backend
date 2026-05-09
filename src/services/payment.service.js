@@ -31,27 +31,29 @@ const verifyPaymentDB = async (data) => {
     // 4. store both ids (IMPORTANT)
     payment.gateway.orderId = razorpay_order_id;
     payment.gateway.paymentId = razorpay_payment_id;
+    const razorPayment = await razorpay.payments.fetch(razorpay_payment_id);
+
+    payment.paymentMethod = razorPayment.method;
 
     await payment.save();
 
     return payment;
 };
 
-/** Create payment */
 const createPaymentDB = async (data, userId) => {
     try {
-        console.log("data obj", data);
-        const paymentExists = await Payment.findOne({ orderId: data.orderId });
-        if (paymentExists) {
-            throw new ApiError(403, "payment already exists");
-        }
-
         const order = await Order.findById(data.orderId);
         if (!order) throw new ApiError(403, "Order not found");
-        // ✅ Create Razorpay order
-
         if (order.orderStatus === "cancelled")
             throw new ApiError(403, "Order is cancelled you can't pay");
+
+        let paymentExists = await Payment.findOne({
+            orderId: data.orderId,
+        });
+
+        if (paymentExists?.status === "completed") {
+            throw new ApiError(403, "Payment already completed");
+        }
 
         const razorOrder = await razorpay.orders.create({
             amount: order.finalPrice * 100,
@@ -59,12 +61,21 @@ const createPaymentDB = async (data, userId) => {
             receipt: order._id.toString(),
         });
 
-        // ✅ Create payment in DB
+        if (paymentExists) {
+            paymentExists.gateway.transactionId = razorOrder.id;
+            paymentExists.status = "pending";
+            await paymentExists.save();
+            return {
+                rzrPay: paymentExists,
+                razorOrder,
+            };
+        }
+
         const rzrPay = await Payment.create({
             userId,
             orderId: data.orderId,
-            amount: order.finalPrice,
-            paymentMethod: data.paymentMethod, // 🔥 REQUIRED
+            amount: order.finalPrice * 100,
+            paymentMethod: data.paymentMethod || "pending",
             status: "pending",
             gateway: {
                 name: "razorpay",
@@ -72,11 +83,14 @@ const createPaymentDB = async (data, userId) => {
             },
         });
 
-        return { rzrPay, razorOrder };
+        return {
+            rzrPay,
+            razorOrder,
+        };
     } catch (err) {
         throw new ApiError(
             err?.statusCode || 400,
-            err?.error?.description || "Payment failed"
+            err?.error?.description || err?.message || "Payment failed"
         );
     }
 };
@@ -104,20 +118,64 @@ const cancelPaymentDB = async (paymentId, userId) => {
     if (!payment) throw new ApiError(404, "Payment not found");
     if (payment.userId.toString() !== userId.toString())
         throw new ApiError(403, "Not Allowed");
+
+    if (payment.status === "completed") {
+        throw new ApiError(400, "Completed payment must be refunded");
+    }
     payment.status = "cancelled";
     await payment.save();
+    await Order.findByIdAndUpdate(payment.orderId, {
+        paymentStatus: "cancelled",
+        orderStatus: "cancelled",
+    });
     return payment;
 };
 
 /**  Refund Payment */
 const refundPaymentDB = async (paymentId) => {
-    const payment = await Payment.findById(paymentId);
-    if (!payment) throw new ApiError(404, "Payment not found");
-    if (payment.status.toString() !== "completed")
-        throw new ApiError(400, "Only completed payments can be refunded");
-    payment.status = "refunded";
-    payment.save();
-    return payment;
+    try {
+        const payment = await Payment.findById(paymentId);
+
+        if (!payment) throw new ApiError(404, "Payment not found");
+
+        if (payment.status !== "completed")
+            throw new ApiError(400, "Only completed payments can be refunded");
+
+        if (!payment.gateway?.paymentId)
+            throw new ApiError(400, "Razorpay payment id missing");
+        console.log(payment.amount);
+        // refund from razorpay
+        const refund = await razorpay.payments.refund(
+            payment.gateway.paymentId,
+            {
+                amount: payment.amount,
+                speed: "normal",
+            }
+        );
+        console.log(payment.amount);
+        // update payment
+        payment.status = "refunded";
+
+        payment.gateway.refundId = refund.id;
+
+        await payment.save();
+
+        // update order
+        await Order.findByIdAndUpdate(payment.orderId, {
+            paymentStatus: "refunded",
+            orderStatus: "cancelled",
+        });
+
+        return refund;
+    } catch (err) {
+        console.log(err);
+
+        throw new ApiError(
+            err?.statusCode || 400,
+
+            err?.error?.description || err?.message || "Refund failed"
+        );
+    }
 };
 
 /**  Update Payment Status */
