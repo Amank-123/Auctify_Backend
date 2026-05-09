@@ -8,6 +8,7 @@ import {
     refundPayment,
     updatePaymentStatus,
     verifyPayment,
+    requestOfflinePayment,
 } from "../controllers/payment.controller.js";
 
 import { protect } from "../middlewares/auth.middleware.js";
@@ -44,5 +45,11 @@ router
     .route("/refund/:payId")
     .patch(protect, protectedApiLimiter, refundPayment);
 router.post("/verify", protect, protectedApiLimiter, verifyPayment);
+router.patch(
+    "/offline-payment/:orderId",
+    protect,
+    protectedApiLimiter,
+    requestOfflinePayment
+);
 
 export default router;

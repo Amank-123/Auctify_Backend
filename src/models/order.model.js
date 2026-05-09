@@ -29,6 +29,7 @@ const orderSchema = new Schema(
             type: String,
             enum: [
                 "awaiting_payment",
+                "awaiting_offline_payment",
                 "confirmed",
                 "processing",
                 "shipped",
@@ -55,6 +56,13 @@ const orderSchema = new Schema(
             state: String,
             country: String,
             pin: String,
+        },
+        deliveryOTP: {
+            type: String,
+        },
+
+        deliveryOTPExpiry: {
+            type: Date,
         },
     },
     {

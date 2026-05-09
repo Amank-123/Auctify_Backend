@@ -7,6 +7,7 @@ import {
     refundPaymentDB,
     updatePaymentStatusDB,
     verifyPaymentDB,
+    requestOfflinePaymentDB,
 } from "../services/payment.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -57,6 +58,13 @@ const verifyPayment = asyncHandler(async (req, res) => {
     ApiResponse(res, 200, "Payment verified", payment);
 });
 
+const requestOfflinePayment = asyncHandler(async (req, res) => {
+    const order = await requestOfflinePaymentDB(
+        req.params.orderId,
+        req.user._id
+    );
+    ApiResponse(res, 200, "Payment verified", order);
+});
 export {
     createPayment,
     allPayment,
@@ -66,4 +74,5 @@ export {
     refundPayment,
     updatePaymentStatus,
     verifyPayment,
+    requestOfflinePayment,
 };

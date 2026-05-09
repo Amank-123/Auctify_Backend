@@ -44,6 +44,7 @@ const paymentSchema = new Schema(
                 "cardless_emi",
                 "cash",
                 "international",
+                "offline_payment",
             ],
             required: true,
         },
@@ -54,18 +55,15 @@ const paymentSchema = new Schema(
                 required: true,
             },
 
-            // razorpay order id
             transactionId: {
                 type: String,
                 required: true,
             },
 
-            // razorpay payment id
             paymentId: {
                 type: String,
             },
 
-            // refund transaction id
             refundId: {
                 type: String,
             },

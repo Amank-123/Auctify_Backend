@@ -11,6 +11,8 @@ import {
     orderCancelDB,
     updateOrderDB,
     singleOrderDB,
+    sendDeliveryOTPDB,
+    verifyDeliveryOTPDB,
 } from "../services/order.service.js";
 
 const createOrder = asyncHandler(async (req, res) => {
@@ -69,7 +71,21 @@ const singleOrder = asyncHandler(async (req, res) => {
     const order = await singleOrderDB(req.params.id, req.user._id);
     ApiResponse(res, 200, "Order fetched successfully", order);
 });
+const sendDeliveryOTP = asyncHandler(async (req, res) => {
+    const order = await sendDeliveryOTPDB(req.params.orderId, req.user._id);
 
+    ApiResponse(res, 200, "OTP sent", order);
+});
+
+const verifyDeliveryOTP = asyncHandler(async (req, res) => {
+    const order = await verifyDeliveryOTPDB(
+        req.params.orderId,
+        req.body.otp,
+        req.user._id
+    );
+
+    ApiResponse(res, 200, "Order delivered", order);
+});
 export {
     createOrder,
     sellerOrders,
@@ -81,4 +97,6 @@ export {
     cancelOrder,
     updateOrder,
     singleOrder,
+    sendDeliveryOTP,
+    verifyDeliveryOTP,
 };

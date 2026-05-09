@@ -11,6 +11,8 @@ import {
     cancelOrder,
     updateOrder,
     singleOrder,
+    sendDeliveryOTP,
+    verifyDeliveryOTP,
 } from "../controllers/order.controller.js";
 import { protectedApiLimiter } from "../limiters/protectedApi.limiter.js";
 const router = express.Router();
@@ -48,5 +50,9 @@ router
 router
     .route("/cancel/:orderId")
     .patch(protect, protectedApiLimiter, cancelOrder);
+
+router.patch("/send-otp/:orderId", protect, sendDeliveryOTP);
+
+router.patch("/verify-otp/:orderId", protect, verifyDeliveryOTP);
 
 export default router;

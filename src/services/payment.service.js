@@ -3,6 +3,7 @@ import { Order } from "../models/order.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { verifySignature } from "../utils/verifySignature.js";
 import razorpay from "../config/razorpay.js";
+import { sendEmail } from "../utils/otp.js";
 
 const verifyPaymentDB = async (data) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = data;
@@ -75,7 +76,7 @@ const createPaymentDB = async (data, userId) => {
             userId,
             orderId: data.orderId,
             amount: order.finalPrice * 100,
-            paymentMethod: data.paymentMethod || "pending",
+            paymentMethod: data.paymentMethod,
             status: "pending",
             gateway: {
                 name: "razorpay",
@@ -195,6 +196,51 @@ const updatePaymentStatusDB = async (paymentId, status, failureReason) => {
     }
     return payment;
 };
+const requestOfflinePaymentDB = async (orderId, userId) => {
+    const order = await Order.findById(orderId);
+
+    if (!order) throw new ApiError(404, "Order not found");
+
+    if (order.buyerId.toString() !== userId.toString()) {
+        throw new ApiError(403, "Not allowed");
+    }
+
+    // already paid
+    if (order.paymentStatus === "completed") {
+        throw new ApiError(400, "Order already paid");
+    }
+
+    // already requested
+    if (order.orderStatus === "awaiting_offline_payment") {
+        throw new ApiError(400, "Offline payment already requested");
+    }
+
+    // update order
+    order.paymentStatus = "pending";
+
+    order.orderStatus = "awaiting_offline_payment";
+
+    await order.save();
+
+    // create payment record
+    await Payment.create({
+        userId,
+        orderId: order._id,
+
+        amount: order.finalPrice * 100,
+
+        paymentMethod: "offline_payment",
+
+        status: "pending",
+
+        gateway: {
+            name: "offline",
+            transactionId: `offline_${Date.now()}`,
+        },
+    });
+
+    return order;
+};
 
 export {
     verifyPaymentDB,
@@ -205,4 +251,5 @@ export {
     cancelPaymentDB,
     refundPaymentDB,
     updatePaymentStatusDB,
+    requestOfflinePaymentDB,
 };

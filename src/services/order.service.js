@@ -1,6 +1,7 @@
 import { Order } from "../models/order.model.js";
 import { Auction } from "../models/auction.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { sendEmail } from "../utils/otp.js";
 
 const createOrderDB = async (orderData, userId) => {
     const existsOnAuctionId = await Order.findOne({
@@ -47,6 +48,9 @@ const orderStatusUpdateDB = async (orderId, userId, orderStatus) => {
     if (!order) throw new ApiError(404, "Order not found");
     if (order.sellerId.toString() !== userId.toString())
         throw new ApiError(403, "Not Allowed");
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    order.deliveryOTP = otp;
+    order.deliveryOTPExpiry = Date.now() + 1000 * 60 * 15;
     order.orderStatus = orderStatus;
     await order.save();
     return order;
@@ -96,6 +100,61 @@ const singleOrderDB = async (orderId, userId) => {
     if (!order) throw new ApiError(404, "Order not found");
     return order;
 };
+const sendDeliveryOTPDB = async (orderId, sellerId) => {
+    const order = await Order.findById(orderId)
+        .populate("buyerId")
+        .populate("auctionId");
+
+    if (!order) throw new ApiError(404, "Order not found");
+
+    if (order.sellerId.toString() !== sellerId.toString())
+        throw new ApiError(403, "Not allowed");
+
+    if (order.paymentStatus !== "completed")
+        throw new ApiError(400, "Payment not completed");
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    order.deliveryOTP = otp;
+
+    order.deliveryOTPExpiry = Date.now() + 1000 * 60 * 10;
+
+    await order.save();
+    console.log("DELIVERY ON EMAIL:", order.buyerId.email);
+    await sendEmail(order.buyerId.email, otp);
+
+    console.log("DELIVERY OTP:", otp);
+
+    return order;
+};
+const verifyDeliveryOTPDB = async (orderId, otp, sellerId) => {
+    const order = await Order.findById(orderId);
+
+    if (!order) throw new ApiError(404, "Order not found");
+
+    if (order.sellerId.toString() !== sellerId.toString()) {
+        throw new ApiError(403, "Not allowed");
+    }
+
+    if (order.deliveryOTP !== otp) {
+        throw new ApiError(400, "Invalid OTP");
+    }
+
+    if (new Date() > order.deliveryOTPExpiry) {
+        throw new ApiError(400, "OTP expired");
+    }
+
+    order.orderStatus = "delivered";
+
+    order.deliveryOTP = null;
+
+    order.deliveryOTPExpiry = null;
+
+    await order.save();
+
+    return order;
+};
+
 export {
     createOrderDB,
     buyerOrdersDB,
@@ -107,4 +166,6 @@ export {
     orderCancelDB,
     updateOrderDB,
     singleOrderDB,
+    sendDeliveryOTPDB,
+    verifyDeliveryOTPDB,
 };
