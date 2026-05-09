@@ -221,7 +221,8 @@ const getsellerAuctionsDB = async (userId) => {
 };
 
 const getAuctionByIdDB = async (auctionId) => {
-    const auction = await Auction.findById(auctionId).populate("sellerId");
+    const auction =
+        await Auction.findById(auctionId).populate("sellerId category");
 
     return auction;
 };

@@ -107,7 +107,7 @@ const createBidDB = async (io, auctionId, userId, amount) => {
             {
                 path: "auctionId",
                 populate: {
-                    path: "sellerId",
+                    path: "sellerId category",
                 },
             },
         ]);
