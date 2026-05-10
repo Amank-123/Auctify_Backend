@@ -31,11 +31,15 @@ export const sendMessageDB = async (io, userId, roomId, text) => {
         roomId,
         senderId: userId,
         text,
+        seenBy: [userId],
     });
+
+    console.log(msg);
 
     await ChatRoom.findByIdAndUpdate(roomId, {
         lastMessage: text,
         lastMessageAt: new Date(),
+        lastMessageId: msg._id,
     });
 
     // const full = await Message.findById(msg._id).populate(
@@ -43,9 +47,13 @@ export const sendMessageDB = async (io, userId, roomId, text) => {
     //     "username profile"
     // );
 
-    await msg.populate("senderId", "username profile");
+    // await msg.populate("senderId", "username profile");
+    const full = await Message.findById(msg._id).populate(
+        "senderId",
+        "username profile"
+    );
 
-    io.to(roomId).emit("receive_message", msg);
+    io.to(roomId).emit("receive_message", full);
 
-    return msg;
+    return full;
 };

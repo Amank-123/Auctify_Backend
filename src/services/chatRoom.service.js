@@ -7,16 +7,18 @@ const getMyChatRoomsDb = async (userId) => {
         .populate("sellerId")
         .populate("buyerId")
         .populate("auctionId")
+        .populate("lastMessageId")
         .sort({ lastMessageAt: -1 });
 };
 const getMyChatRoomDb = async (userId, roomId) => {
-    return await ChatRoom.find({
+    return await ChatRoom.findOne({
         _id: roomId,
         $or: [{ sellerId: userId }, { buyerId: userId }],
     })
         .populate("sellerId")
         .populate("buyerId")
         .populate("auctionId")
+        .populate("lastMessageId")
         .sort({ lastMessageAt: -1 });
 };
 

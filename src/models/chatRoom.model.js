@@ -22,6 +22,10 @@ const chatRoomSchema = new Schema(
             type: String,
             default: "",
         },
+        lastMessageId: {
+            type: Schema.Types.ObjectId,
+            ref: "Message",
+        },
 
         lastMessageAt: {
             type: Date,
