@@ -22,7 +22,7 @@ const createAuctionDB = async (auctionData, sellerId, files) => {
     let mediaArr = [];
     for (const file of files) {
         const media = await uploadToCloudinary(file.buffer, file.mimetype);
-        console.log("Mime type:", file.mimetype);
+        // console.log("Mime type:", file.mimetype);
         mediaArr.push(media.secure_url);
     }
     const auction = await Auction.create({
@@ -215,7 +215,9 @@ const getAllAuctionsDB = async (filters, options) => {
 };
 
 const getsellerAuctionsDB = async (userId) => {
-    const auctions = await Auction.find({ sellerId: userId });
+    const auctions = await Auction.find({ sellerId: userId }).populate(
+        "sellerId"
+    );
 
     return auctions;
 };
@@ -265,7 +267,7 @@ const startAuctionDB = async (auctionId, io = null) => {
 
     await auction.populate("sellerId");
 
-    console.log("Inside IO:", io);
+    // console.log("Inside IO:", io);
     if (io) {
         console.log("Entered in a socket block startAuctionDB");
         emitEvent(io, auctionId, "AUCTION_STARTED", auction);
@@ -352,7 +354,7 @@ const endAuctionDB = async (auctionId, io = null) => {
         await addNotificationDB(io, highestBid.userId.toString(), {
             type: "won",
             title: "You won the auction!",
-            message: `Congratulations! You won ${auction.title}. Complete payment now.`,
+            message: `Congratulations! You won ${auction.name}. Complete payment now.`,
             auction: auction._id,
             ctaLink: `/auction/room`,
         });
@@ -361,7 +363,7 @@ const endAuctionDB = async (auctionId, io = null) => {
         await addNotificationDB(io, auction.sellerId._id.toString(), {
             type: "sold",
             title: "Your item has been sold!",
-            message: `${auction.title} has ended successfully. Contact buyer now.`,
+            message: `${auction.name} has ended successfully. Contact buyer now.`,
             auction: auction._id,
             ctaLink: `/auction/room`,
         });
@@ -369,6 +371,8 @@ const endAuctionDB = async (auctionId, io = null) => {
         if (io) {
             emitEvent(io, auctionId, "AUCTION_ENDED", auction);
         }
+ 
+        io.to(`user_${highestBid.userId}`).emit("ORDER_COUNT_INCREMENT");
 
         return auction;
     });

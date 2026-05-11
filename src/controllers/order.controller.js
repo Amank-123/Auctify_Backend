@@ -31,10 +31,12 @@ const buyerOrders = asyncHandler(async (req, res) => {
     ApiResponse(res, 200, "Orders fetched successfully", orders);
 });
 const updateOrderStatus = asyncHandler(async (req, res) => {
+    const io = req.app.get("io");
     const order = await orderStatusUpdateDB(
         req.params.orderId,
         req.user._id,
-        req.body.orderStatus
+        req.body.orderStatus,
+        io
     );
     ApiResponse(res, 200, "Order status successfully updated", order);
 });
@@ -59,7 +61,9 @@ const allOrders = asyncHandler(async (req, res) => {
 });
 
 const cancelOrder = asyncHandler(async (req, res) => {
-    const order = await orderCancelDB(req.params.orderId, req.user._id);
+    const io = req.app.get("io");
+    const order = await orderCancelDB(req.params.orderId, req.user._id, io);
+
     ApiResponse(res, 200, "Order cancelled successfully", order);
 });
 const updateOrder = asyncHandler(async (req, res) => {
@@ -78,10 +82,12 @@ const sendDeliveryOTP = asyncHandler(async (req, res) => {
 });
 
 const verifyDeliveryOTP = asyncHandler(async (req, res) => {
+    const io = req.app.get("io");
     const order = await verifyDeliveryOTPDB(
         req.params.orderId,
         req.body.otp,
-        req.user._id
+        req.user._id,
+        io
     );
 
     ApiResponse(res, 200, "Order delivered", order);

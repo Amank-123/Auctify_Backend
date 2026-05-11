@@ -163,7 +163,8 @@ const deleteBidDB = async (bidId) => {
 const bidDB = async (bidId) => {
     const bid = await Bid.findOne(bidId)
         .populate("auctionId")
-        .populate("userId");
+        .populate("userId")
+        .populate("sellerId");
     if (!bid) throw new ApiError(404, "No bid found");
     return bid;
 };

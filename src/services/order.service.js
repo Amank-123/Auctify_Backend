@@ -11,22 +11,26 @@ const createOrderDB = async (orderData, userId) => {
 
     const auction = await Auction.findById(orderData.auctionId);
     if (!auction) throw new ApiError(404, "Auction not found");
-    return await Order.create({
+    const result = await Order.create({
         ...orderData,
         buyerId: userId,
         sellerId: auction.sellerId,
     });
+
+    return result;
 };
 
 const buyerOrdersDB = async (userId) => {
     return await Order.find({ buyerId: userId })
         .populate("buyerId")
-        .populate("auctionId");
+        .populate("auctionId")
+        .populate("sellerId");
 };
 const sellerOrdersDB = async (userId) => {
     const order = await Order.find({ sellerId: userId })
         .populate("auctionId")
-        .populate("buyerId");
+        .populate("buyerId")
+        .populate("sellerId");
     return order;
 };
 
@@ -40,10 +44,11 @@ const paymentStatusUpdateDB = async (orderId, userId, paymentStatus) => {
         order.orderStatus = "confirmed";
     }
     await order.save();
+
     return order;
 };
 
-const orderStatusUpdateDB = async (orderId, userId, orderStatus) => {
+const orderStatusUpdateDB = async (orderId, userId, orderStatus, io) => {
     const order = await Order.findById(orderId);
     if (!order) throw new ApiError(404, "Order not found");
     if (order.sellerId.toString() !== userId.toString())
@@ -53,6 +58,9 @@ const orderStatusUpdateDB = async (orderId, userId, orderStatus) => {
     order.deliveryOTPExpiry = Date.now() + 1000 * 60 * 15;
     order.orderStatus = orderStatus;
     await order.save();
+
+    io.to(`user_${order.buyerId}`).emit("ORDER_COUNT_DECREMENT");
+
     return order;
 };
 
@@ -67,7 +75,7 @@ const allOrdersDB = async () => {
     return orders;
 };
 
-const orderCancelDB = async (orderId, userId) => {
+const orderCancelDB = async (orderId, userId, io) => {
     const order = await Order.findById(orderId);
     if (!order) throw new ApiError(404, "Order not found");
     if (order.buyerId.toString() !== userId.toString())
@@ -77,6 +85,9 @@ const orderCancelDB = async (orderId, userId) => {
         throw new ApiError(400, "Confirmed Order cannot be cancelled");
     order.orderStatus = "cancelled";
     await order.save();
+
+    io.to(`user_${order.buyerId}`).emit("ORDER_COUNT_DECREMENT");
+
     return order;
 };
 
@@ -127,7 +138,7 @@ const sendDeliveryOTPDB = async (orderId, sellerId) => {
 
     return order;
 };
-const verifyDeliveryOTPDB = async (orderId, otp, sellerId) => {
+const verifyDeliveryOTPDB = async (orderId, otp, sellerId, io) => {
     const order = await Order.findById(orderId);
 
     if (!order) throw new ApiError(404, "Order not found");
@@ -151,6 +162,8 @@ const verifyDeliveryOTPDB = async (orderId, otp, sellerId) => {
     order.deliveryOTPExpiry = null;
 
     await order.save();
+
+    io.to(`user_${order.buyerId}`).emit("ORDER_COUNT_DECREMENT");
 
     return order;
 };

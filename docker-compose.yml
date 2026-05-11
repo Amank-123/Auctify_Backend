@@ -26,7 +26,7 @@ services:
             GIT_CLIENT_ID: Ov23litAjeAAdifaLPuq
             GIT_CLIENT_SECRET: 53c654839a51ba22be123f71f1a81a9a0f6ce625
             EMAIL_USER: amankumar213564@gmail.com
-            EMAIL_PASS: mgaaoneumljicmqs
+            EMAIL_PASS: yupiwizzorwqegti
             RAZORPAY_KEY_ID: rzp_test_Sat4yt48jK6UN0
             RAZORPAY_KEY_SECRET: USJp62cJUniMiwkKXJ6N3Fh5
             CLOUDINARY_CLOUD_NAME: dvhc5ay3t
