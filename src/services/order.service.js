@@ -23,12 +23,24 @@ const createOrderDB = async (orderData, userId) => {
 const buyerOrdersDB = async (userId) => {
     return await Order.find({ buyerId: userId })
         .populate("buyerId")
-        .populate("auctionId")
+        .populate({
+            path: "auctionId",
+            populate: {
+                path: "category",
+                select: "name",
+            },
+        })
         .populate("sellerId");
 };
 const sellerOrdersDB = async (userId) => {
     const order = await Order.find({ sellerId: userId })
-        .populate("auctionId")
+        .populate({
+            path: "auctionId",
+            populate: {
+                path: "category",
+                select: "name",
+            },
+        })
         .populate("buyerId")
         .populate("sellerId");
     return order;
