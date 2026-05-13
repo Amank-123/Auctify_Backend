@@ -1,12 +1,11 @@
-import mongoose, { Mongoose, Schema } from "mongoose";
-import { boolean } from "zod";
+import mongoose, { Schema } from "mongoose";
+
 const chatRoomSchema = new Schema(
     {
         auctionId: {
             type: Schema.Types.ObjectId,
             ref: "Auction",
             required: true,
-            unique: true,
         },
         sellerId: {
             type: Schema.Types.ObjectId,
@@ -24,7 +23,8 @@ const chatRoomSchema = new Schema(
         },
         lastMessageId: {
             type: Schema.Types.ObjectId,
-            ref: "Message",
+            ref: "ChatMessage",
+            default: null,
         },
 
         lastMessageAt: {

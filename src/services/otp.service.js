@@ -52,11 +52,11 @@ const verifyForgotPasswordOTPDB = async (email, otp) => {
     const isMatch = await bcrypt.compare(otp, record.otp);
     if (!isMatch) throw new Error("Invalid OTP");
 
-    const user = await User.findOne({ email });
-
-    user.resetPasswordVerified = true;
-
-    await user.save({ runValidators: false });
+    const user = await User.findOneAndUpdate(
+        { email },
+        { $set: { resetPasswordVerified: true } },
+        { runValidators: false }
+    );
 
     await Otp.deleteMany({ email });
     return user;

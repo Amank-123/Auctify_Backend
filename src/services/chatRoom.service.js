@@ -7,9 +7,16 @@ const getMyChatRoomsDb = async (userId) => {
         .populate("sellerId")
         .populate("buyerId")
         .populate("auctionId")
-        .populate("lastMessageId")
+        .populate({
+            path: "lastMessageId",
+            populate: {
+                path: "senderId",
+                select: "_id username profile",
+            },
+        })
         .sort({ lastMessageAt: -1 });
 };
+
 const getMyChatRoomDb = async (userId, roomId) => {
     return await ChatRoom.findOne({
         _id: roomId,
@@ -18,8 +25,13 @@ const getMyChatRoomDb = async (userId, roomId) => {
         .populate("sellerId")
         .populate("buyerId")
         .populate("auctionId")
-        .populate("lastMessageId")
-        .sort({ lastMessageAt: -1 });
+        .populate({
+            path: "lastMessageId",
+            populate: {
+                path: "senderId",
+                select: "_id username profile",
+            },
+        });
 };
 
 export { getMyChatRoomsDb, getMyChatRoomDb };

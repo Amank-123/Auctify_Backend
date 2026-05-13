@@ -75,6 +75,7 @@ export const messageSocket = (io) => {
                     {
                         lastMessage: text,
                         lastMessageAt: new Date(),
+                        lastMessageId: msg._id,
                     },
                     {
                         new: true,

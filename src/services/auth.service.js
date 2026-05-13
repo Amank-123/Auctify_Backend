@@ -45,7 +45,7 @@ const loginUserDB = async (email, password) => {
 };
 
 const forgotPasswordDB = async (email) => {
-    const user = await User.find({ email });
+    const user = await User.findOne({ email });
     if (!user) throw new ApiError(404, "User not found check email");
     console.log(email);
 

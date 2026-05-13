@@ -7,7 +7,7 @@ import {
 
 const router = express.Router();
 
-router.get("/getRooms", protect, getMyChatRooms);
-router.post("/getRoom", protect, getMyChatRoom);
+router.get("/getrooms", protect, getMyChatRooms);
+router.post("/getroom", protect, getMyChatRoom);
 
 export default router;
