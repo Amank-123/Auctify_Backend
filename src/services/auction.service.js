@@ -14,17 +14,39 @@ import { emitEvent } from "../socket/events.js";
 import { addNotificationDB } from "../services/notification.service.js";
 import { ChatRoom } from "../models/chatRoom.model.js";
 import { Order } from "../models/order.model.js";
+import { optimizeImage } from "../utils/optimizeImage.js";
+import { optimizeVideo } from "../utils/optimizeVideo.js";
 
 const createAuctionDB = async (auctionData, sellerId, files) => {
     if (!files || files.length === 0) {
         throw new Error("At least one media file required");
     }
-    let mediaArr = [];
-    for (const file of files) {
-        const media = await uploadToCloudinary(file.buffer, file.mimetype);
-        // console.log("Mime type:", file.mimetype);
-        mediaArr.push(media.secure_url);
-    }
+
+    const mediaArr = await Promise.all(
+        files.map(async (file) => {
+            let optimizedBuffer = file.buffer;
+
+            // IMAGE OPTIMIZATION
+            if (file.mimetype.startsWith("image")) {
+                optimizedBuffer = await optimizeImage(file.buffer);
+            }
+
+            // VIDEO OPTIMIZATION
+            else if (file.mimetype.startsWith("video")) {
+                optimizedBuffer = await optimizeVideo(file.buffer);
+            }
+            // console.log(optimizedBuffer);
+
+            // UPLOAD
+            const uploadedMedia = await uploadToCloudinary(
+                optimizedBuffer,
+                file.mimetype
+            );
+
+            return uploadedMedia.secure_url;
+        })
+    );
+
     const auction = await Auction.create({
         name: auctionData.name,
         description: auctionData.description,
@@ -330,6 +352,8 @@ const endAuctionDB = async (auctionId, io = null) => {
 
         await auction.save({ session });
 
+        await auction.populate("sellerId");
+
         // Create / reuse room
         const room = await ChatRoom.findOneAndUpdate(
             {
@@ -347,8 +371,6 @@ const endAuctionDB = async (auctionId, io = null) => {
                 session,
             }
         );
-
-        await auction.populate("sellerId");
 
         // Winner notify
         await addNotificationDB(io, highestBid.userId.toString(), {
@@ -368,10 +390,9 @@ const endAuctionDB = async (auctionId, io = null) => {
             ctaLink: `/auction/room`,
         });
 
-        if (io) {
-            emitEvent(io, auctionId, "AUCTION_ENDED", auction);
-        }
- 
+        // Emit events
+        emitEvent(io, auctionId, "AUCTION_ENDED", auction);
+
         io.to(`user_${highestBid.userId}`).emit("ORDER_COUNT_INCREMENT");
 
         return auction;

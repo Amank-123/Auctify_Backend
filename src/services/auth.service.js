@@ -70,30 +70,65 @@ const resetForgottenPasswordDB = async (email, password) => {
 };
 
 const findOrCreateOAuthUser = async (profile) => {
-    const email = profile.emails?.[0]?.value;
+    try {
+        // Extract email safely
+        const email = profile.emails?.[0]?.value;
 
-    const user = await User.findOne({ googleId: profile.id });
+        if (!email) {
+            throw new Error("Google account email not found");
+        }
 
-    if (user) return user;
+        // Check if user already exists with googleId
+        let user = await User.findOne({
+            googleId: profile.id,
+        });
 
-    const existingUser = await User.findOne({ email });
+        if (user) {
+            return user;
+        }
 
-    if (existingUser) {
-        console.log(profile);
-        existingUser.googleId = profile.id;
-        await existingUser.save({ validateBeforeSave: false });
-        return existingUser;
+        // Check if account already exists with same email
+        user = await User.findOne({ email });
+
+        if (user) {
+            // Link Google account
+            user.googleId = profile.id;
+
+            // Update profile image if available
+            if (profile._json?.picture) {
+                user.profile = profile._json.picture;
+            }
+
+            // Mark verified
+            user.isVerified = true;
+
+            await user.save({ validateBeforeSave: false });
+
+            return user;
+        }
+
+        // Create completely new OAuth user
+        const newUser = await User.create({
+            email,
+
+            firstName: profile.name?.givenName || "User",
+
+            lastName: profile.name?.familyName || "",
+
+            profile: profile._json?.picture || "",
+
+            status: "neutral",
+
+            isVerified: profile._json?.email_verified || true,
+
+            googleId: profile.id,
+        });
+
+        return newUser;
+    } catch (error) {
+        console.error("findOrCreateOAuthUser Error:", error);
+        throw error;
     }
-
-    return await User.create({
-        email,
-        firstName: profile.name.givenName,
-        lastName: profile.name.familyName,
-        profile: profile._json?.picture,
-        status: "neuteral",
-        isVerified: profile._json.email_verified,
-        googleId: profile.id,
-    });
 };
 
 const findOrCreateGithubUser = async (profile) => {

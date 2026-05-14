@@ -22,7 +22,16 @@ export const scheduleAuctionEnd = async (auctionId, countdownEnd) => {
 export const scheduleAuctionStart = async (auctionId, startTime) => {
     const delay = new Date(startTime).getTime() - Date.now();
 
-    if (delay <= 0) return;
+    if (delay <= 0) {
+        await auctionQueue.add(
+            "startAuction",
+            { auctionId },
+            {
+                jobId: auctionId + "_start",
+                removeOnComplete: true,
+            }
+        );
+    }
 
     await auctionQueue.remove(auctionId.toString() + "_start").catch(() => {});
 

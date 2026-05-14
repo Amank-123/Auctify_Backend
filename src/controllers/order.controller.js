@@ -22,12 +22,12 @@ const createOrder = asyncHandler(async (req, res) => {
 
 const sellerOrders = asyncHandler(async (req, res) => {
     const orders = await sellerOrdersDB(req.user._id);
-    console.log("orders", orders);
+    // console.log("orders", orders);
     ApiResponse(res, 200, "Orders fetched successfully", orders);
 });
 const buyerOrders = asyncHandler(async (req, res) => {
     const orders = await buyerOrdersDB(req.user._id);
-    console.log("orders", orders);
+    // console.log("orders", orders);
     ApiResponse(res, 200, "Orders fetched successfully", orders);
 });
 const updateOrderStatus = asyncHandler(async (req, res) => {
