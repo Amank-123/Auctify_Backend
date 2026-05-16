@@ -170,9 +170,9 @@ const bidDB = async (bidId) => {
 };
 
 const userBidsDB = async (userId) => {
-    const bids = await Bid.find({ userId })
-        .populate("auctionId")
-        .sort({ createdAt: -1 });
+    const bids = await Bid.find({ userId }).populate("auctionId");
+
+    // console.log(bids);
 
     if (!bids) throw new ApiError(404, "No bids found");
     return bids;

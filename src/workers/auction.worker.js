@@ -32,7 +32,7 @@ const worker = new Worker(
 );
 
 worker.on("completed", (job) => {
-    console.log(`✅ Job completed: ${job.name} (${job.id})`);
+    console.log(` Job completed: ${job.name} (${job.id})`);
 });
 
 worker.on("failed", (job, err) => {

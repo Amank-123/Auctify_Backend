@@ -5,13 +5,35 @@ import { User } from "../models/user.model.js";
 import { verifyAccessToken } from "../utils/jwtVerification.utils.js";
 
 const protect = asyncHandler(async function (req, _, next) {
-    const cookie = req.cookies?.accessToken;
-    // console.log(cookie)
-    if (!cookie) throw new ApiError(401, "Unautherised Access");
-    const decode = verifyAccessToken(cookie);
-    const user = await User.findById(decode._id);
-    if (!user) throw new ApiError(401, "invalid user");
+    const accessToken = req.cookies?.accessToken;
+
+    // User is not logged in at all
+    if (!accessToken) {
+        throw new ApiError(401, "NO_TOKEN");
+    }
+
+    let decoded;
+
+    try {
+        decoded = verifyAccessToken(accessToken);
+    } catch (err) {
+        // Token expired
+        if (err.name === "TokenExpiredError") {
+            throw new ApiError(401, "TOKEN_EXPIRED");
+        }
+
+        // Invalid token
+        throw new ApiError(401, "INVALID_TOKEN");
+    }
+
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+        throw new ApiError(401, "INVALID_USER");
+    }
+
     req.user = user;
+
     next();
 });
 

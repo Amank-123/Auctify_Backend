@@ -7,7 +7,7 @@ const onlineUsers = new Map();
 
 export const messageSocket = (io) => {
     io.on("connection", (socket) => {
-        console.log("✅ SOCKET CONNECTED:", socket.id);
+        // console.log("✅ SOCKET CONNECTED:", socket.id);
 
         /* ================= REGISTER USER ================= */
 
@@ -20,7 +20,7 @@ export const messageSocket = (io) => {
 
             io.emit("online_users", Array.from(onlineUsers.keys()));
 
-            console.log("🟢 USER ONLINE:", userId);
+            // console.log("🟢 USER ONLINE:", userId);
         });
 
         /* ================= JOIN ROOM ================= */
@@ -30,7 +30,7 @@ export const messageSocket = (io) => {
 
             socket.join(roomId);
 
-            console.log(`🚪 Joined Room: ${roomId}`);
+            // console.log(`🚪 Joined Room: ${roomId}`);
         });
 
         /* ================= LEAVE ROOM ================= */
@@ -106,7 +106,7 @@ export const messageSocket = (io) => {
 
                 const receiverSocketId = onlineUsers.get(String(receiverId));
 
-                console.log("📨 RECEIVER SOCKET:", receiverSocketId);
+                // console.log("📨 RECEIVER SOCKET:", receiverSocketId);
 
                 /* ================= CHAT NOTIFICATION ================= */
 
@@ -128,7 +128,7 @@ export const messageSocket = (io) => {
                     console.log("✅ room_updated emitted");
                 }
 
-                console.log("📩 MESSAGE SENT");
+                // console.log("📩 MESSAGE SENT");
             } catch (error) {
                 console.log("❌ SEND ERROR:", error);
             }
@@ -177,7 +177,7 @@ export const messageSocket = (io) => {
                     seenBy: userId,
                 });
 
-                console.log("👀 MESSAGE SEEN:", messageIds.length);
+                // console.log("👀 MESSAGE SEEN:", messageIds.length);
             } catch (error) {
                 console.log("❌ SEEN ERROR:", error);
             }
@@ -210,7 +210,7 @@ export const messageSocket = (io) => {
 
             io.emit("online_users", Array.from(onlineUsers.keys()));
 
-            console.log("🔌 DISCONNECTED:", socket.id);
+            // console.log("🔌 DISCONNECTED:", socket.id);
         });
     });
 };

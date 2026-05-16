@@ -10,8 +10,8 @@ export const socketHandler = (io) => {
             socket.join(room);
         });
 
-        socket.on("disconnect", (reason) => {
-            console.log(`disconnected: ${socket.id}, Reason: ${reason}`);
-        });
+        // socket.on("disconnect", (reason) => {
+        //     console.log(`disconnected: ${socket.id}, Reason: ${reason}`);
+        // });
     });
 };

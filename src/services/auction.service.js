@@ -291,7 +291,7 @@ const startAuctionDB = async (auctionId, io = null) => {
 
     // console.log("Inside IO:", io);
     if (io) {
-        console.log("Entered in a socket block startAuctionDB");
+        // console.log("Entered in a socket block startAuctionDB");
         emitEvent(io, auctionId, "AUCTION_STARTED", auction);
     }
 

@@ -80,6 +80,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     user.refreshToken = newRefreshToken;
     await user.save({ validateBeforeSave: false });
 
+    // console.log("New Access token: ", newAccessToken);
+
     return res
         .status(200)
         .cookie("accessToken", newAccessToken, options)

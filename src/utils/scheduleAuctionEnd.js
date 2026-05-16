@@ -7,7 +7,7 @@ export const scheduleAuctionEnd = async (auctionId, countdownEnd) => {
     if (delay <= 0) return;
 
     await auctionQueue.remove(auctionId.toString()).catch(() => {});
-    console.log("Delay to end:", delay);
+    // console.log("Delay to end:", delay);
     await auctionQueue.add(
         "endAuction",
         { auctionId },
@@ -16,7 +16,7 @@ export const scheduleAuctionEnd = async (auctionId, countdownEnd) => {
             jobId: auctionId.toString(),
         }
     );
-    console.log("scheduler called successfully");
+    // console.log("scheduler called successfully");
 };
 
 export const scheduleAuctionStart = async (auctionId, startTime) => {
@@ -45,7 +45,7 @@ export const scheduleAuctionStart = async (auctionId, startTime) => {
         }
     );
 
-    console.log("Start scheduler called");
+    // console.log("Start scheduler called");
 };
 
 export const rehydrateAuctionStartJobs = async () => {
