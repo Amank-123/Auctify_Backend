@@ -7,7 +7,12 @@ const userSchema = new Schema(
         username: {
             type: String,
             unique: true,
+            required: true,
+            lowercase: true,
             trim: true,
+            minlength: 3,
+            maxlength: 20,
+            match: [/^[a-z0-9_]+$/, "Invalid username"],
         },
         firstName: {
             type: String,
@@ -47,8 +52,8 @@ const userSchema = new Schema(
         },
         status: {
             type: String,
-            enum: ["warned", "temp-restricted", "banned", "neutral"],
-            default: "neutral",
+            enum: ["warned", "temp-restricted", "banned", "neuteral"],
+            default: "neuteral",
         },
         role: {
             type: String,
@@ -61,6 +66,8 @@ const userSchema = new Schema(
         },
         googleId: {
             type: String,
+            unique: true,
+            sparse: true,
             select: false,
         },
         githubId: {

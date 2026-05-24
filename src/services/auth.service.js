@@ -77,7 +77,6 @@ const findOrCreateOAuthUser = async (profile) => {
         if (!email) {
             throw new Error("Google account email not found");
         }
-
         // Check if user already exists with googleId
         let user = await User.findOne({
             googleId: profile.id,
@@ -93,12 +92,10 @@ const findOrCreateOAuthUser = async (profile) => {
         if (user) {
             // Link Google account
             user.googleId = profile.id;
-
             // Update profile image if available
             if (profile._json?.picture) {
                 user.profile = profile._json.picture;
             }
-
             // Mark verified
             user.isVerified = true;
 
@@ -107,20 +104,31 @@ const findOrCreateOAuthUser = async (profile) => {
             return user;
         }
 
+        const baseUsername =
+            profile.displayName
+                ?.toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[^a-z0-9]/g, "") || email.split("@")[0];
+
+        let username = baseUsername;
+
+        // Ensure unique username
+        let counter = 1;
+
+        while (await User.findOne({ username })) {
+            username = `${baseUsername}${counter}`;
+            counter++;
+        }
+
         // Create completely new OAuth user
         const newUser = await User.create({
             email,
-
+            username,
             firstName: profile.name?.givenName || "User",
-
             lastName: profile.name?.familyName || "",
-
             profile: profile._json?.picture || "",
-
-            status: "neutral",
-
-            isVerified: profile._json?.email_verified || true,
-
+            status: "neuteral",
+            isVerified: profile._json?.email_verified ?? true,
             googleId: profile.id,
         });
 
