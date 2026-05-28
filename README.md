@@ -574,7 +574,7 @@ The runtime reads these values for MongoDB, Redis, JWT auth, OAuth callbacks, em
 ## Clone Repository
 
 ```bash
-git clone <repository_url>
+git clone https://github.com/Amank-123/Auctify_Backend.git
 cd Auctify_Backend
 ```
 
