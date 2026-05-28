@@ -684,7 +684,7 @@ The backend architecture is deployment-ready for:
 
 ## Gautam Singh & Aman Kumar
 
-Full Stack Developer focused on scalable real-time systems and production-grade web application architecture.
+Full Stack Developers focused on scalable real-time systems and production-grade web application architecture.
 
 ---
 
