@@ -34,14 +34,6 @@ app.use(
     })
 );
 
-// // app.use(xss());
-// app.use(
-//   mongoSanitize({
-//     allowDots: true,
-//     replaceWith: "_",
-//   })
-// );
-
 app.use((req, res, next) => {
     if (req.body) req.body = mongoSanitize.sanitize(req.body);
     if (req.params) req.params = mongoSanitize.sanitize(req.params);
