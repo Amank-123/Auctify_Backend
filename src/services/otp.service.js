@@ -8,16 +8,31 @@ const generateOtp = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendOtpDB = async (email) => {
+    console.log("STEP 1");
+
     const otp = generateOtp();
+
+    console.log("STEP 2");
+
     const hashedOtp = await bcrypt.hash(otp, 10);
-    // console.log(hashedOtp);
+
+    console.log("STEP 3");
+
     await Otp.deleteMany({ email });
+
+    console.log("STEP 4");
+
     await Otp.create({
         email,
         otp: hashedOtp,
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
+
+    console.log("STEP 5");
+
     await sendEmail(email, otp);
+
+    console.log("STEP 6");
 };
 
 const verifyOtpDB = async (email, otp) => {
