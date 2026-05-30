@@ -13,7 +13,7 @@ const sendEmail = async (email, otp) => {
 
     console.log("B");
 
-    // await transporter.verify();
+    await transporter.verify();
 
     console.log("C");
 
