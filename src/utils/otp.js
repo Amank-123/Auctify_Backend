@@ -4,7 +4,8 @@ const sendEmail = async (email, otp) => {
     const client = SibApiV3Sdk.ApiClient.instance;
 
     client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
-
+    console.log("BREVO API KEY EXISTS:", !!process.env.BREVO_API_KEY);
+    console.log("BREVO API KEY:", process.env.BREVO_API_KEY?.slice(0, 10));
     const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
     await apiInstance.sendTransacEmail({
