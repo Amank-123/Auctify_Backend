@@ -7,6 +7,8 @@ import {
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 const resendOTP = asyncHandler(async (req, res) => {
+    console.log("🚨 RESEND CONTROLLER HIT 🚨");
+
     const { email } = req.body;
 
     await sendOtpDB(email);
