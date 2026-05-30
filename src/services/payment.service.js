@@ -3,7 +3,6 @@ import { Order } from "../models/order.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { verifySignature } from "../utils/verifySignature.js";
 import razorpay from "../config/razorpay.js";
-import { sendEmail } from "../utils/otp.js";
 
 const verifyPaymentDB = async (data) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = data;

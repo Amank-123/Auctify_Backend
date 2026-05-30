@@ -7,7 +7,7 @@ import { User } from "../models/user.model.js";
 const generateOtp = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
-const sendOtpDB = async (email) => {
+const sendOtpDB = async (email, purpose = "Verification") => {
     const otp = generateOtp();
 
     const hashedOtp = await bcrypt.hash(otp, 10);
@@ -20,7 +20,7 @@ const sendOtpDB = async (email) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    await sendEmail(email, otp);
+    await sendEmail(email, otp, purpose);
 };
 
 const verifyOtpDB = async (email, otp) => {

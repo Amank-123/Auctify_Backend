@@ -31,7 +31,7 @@ const registerUserDB = async (data) => {
         ...data,
         isVerified: false,
     });
-    await sendOtpDB(user.email);
+    await sendOtpDB(user.email, "Account Verification");
 
     return user;
 };
@@ -43,7 +43,7 @@ const loginUserDB = async (email, password) => {
     if (!user) throw new ApiError(404, "User not found check email");
 
     if (!user.isVerified) {
-        await sendOtpDB(user.email);
+        await sendOtpDB(user.email, "Account Verification");
 
         throw new ApiError(403, "EMAIL_NOT_VERIFIED");
     }
@@ -68,7 +68,7 @@ const forgotPasswordDB = async (email) => {
     if (!user) throw new ApiError(404, "User not found check email");
     console.log(email);
 
-    await sendOtpDB(email);
+    await sendOtpDB(email, "Password Reset");
 
     return user;
 };

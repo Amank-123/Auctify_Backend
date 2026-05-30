@@ -144,8 +144,7 @@ const sendDeliveryOTPDB = async (orderId, sellerId) => {
 
     await order.save();
     console.log("DELIVERY ON EMAIL:", order.buyerId.email);
-    await sendEmail(order.buyerId.email, otp);
-
+    await sendEmail(order.buyerId.email, otp, "Delivery Verification");
     console.log("DELIVERY OTP:", otp);
 
     return order;
