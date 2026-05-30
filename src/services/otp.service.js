@@ -8,19 +8,11 @@ const generateOtp = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendOtpDB = async (email) => {
-    console.log("STEP 1");
-
     const otp = generateOtp();
-
-    console.log("STEP 2");
 
     const hashedOtp = await bcrypt.hash(otp, 10);
 
-    console.log("STEP 3");
-
     await Otp.deleteMany({ email });
-
-    console.log("STEP 4");
 
     await Otp.create({
         email,
@@ -28,11 +20,7 @@ const sendOtpDB = async (email) => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    console.log("STEP 5");
-
     await sendEmail(email, otp);
-
-    console.log("STEP 6");
 };
 
 const verifyOtpDB = async (email, otp) => {
@@ -59,7 +47,7 @@ const verifyOtpDB = async (email, otp) => {
 };
 
 const verifyForgotPasswordOTPDB = async (email, otp) => {
-    console.log(`${email}, ${otp}`);
+    // console.log(`${email}, ${otp}`);
 
     const record = await Otp.findOne({ email });
     if (!record) throw new ApiError(404, "OTP not found");

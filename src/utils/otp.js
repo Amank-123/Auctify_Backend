@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 
 const sendEmail = async (email, otp) => {
-    console.log("A");
+    // console.log("A");
 
     const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -11,11 +11,11 @@ const sendEmail = async (email, otp) => {
         },
     });
 
-    console.log("B");
+    // console.log("B");
 
     await transporter.verify();
 
-    console.log("C");
+    // console.log("C");
 
     await transporter.sendMail({
         from: process.env.EMAIL_USER,
@@ -24,7 +24,7 @@ const sendEmail = async (email, otp) => {
         text: `Your OTP is ${otp}`,
     });
 
-    console.log("D");
+    // // console.log("D");
 };
 
 export { sendEmail };

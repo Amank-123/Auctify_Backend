@@ -2,8 +2,31 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import uploadToCloudinary from "../utils/cloudinaryUploader.js";
 import { sendOtpDB } from "./otp.service.js";
+import dns from "dns/promises";
+
+const validateEmailDomain = async (email) => {
+    const domain = email.split("@")[1];
+
+    try {
+        const mxRecords = await dns.resolveMx(domain);
+
+        if (!mxRecords.length) {
+            throw new ApiError(400, "Invalid email domain");
+        }
+    } catch {
+        throw new ApiError(400, "Invalid email domain");
+    }
+};
 
 const registerUserDB = async (data) => {
+    await validateEmailDomain(data.email);
+
+    const existingUser = await User.findOne({ email: data.email });
+    if (existingUser) throw new ApiError(409, "Email already in use");
+
+    const existingUsername = await User.findOne({ username: data.username });
+    if (existingUsername) throw new ApiError(409, "Username already in use");
+
     const user = await User.create({
         ...data,
         isVerified: false,
@@ -19,16 +42,20 @@ const loginUserDB = async (email, password) => {
     );
     if (!user) throw new ApiError(404, "User not found check email");
 
-    if (!user.isVerified) throw new ApiError(403, "Verify your email first");
+    if (!user.isVerified) {
+        await sendOtpDB(user.email);
+
+        throw new ApiError(403, "EMAIL_NOT_VERIFIED");
+    }
 
     const isValid = await user.comparePassword(password);
-    if (!isValid) throw new ApiError(401, "Incorrect Credentials");
+    if (!isValid) throw new ApiError(401, "Incorrect password");
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
-    console.log("Access token: ", accessToken);
-    console.log("Refresh token: ", refreshToken);
+    // console.log("Access token: ", accessToken);
+    // console.log("Refresh token: ", refreshToken);
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
