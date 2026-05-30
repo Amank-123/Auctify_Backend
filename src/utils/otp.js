@@ -4,50 +4,47 @@ const sendEmail = async (email, otp) => {
     try {
         console.log("=== EMAIL START ===");
 
-        console.log("HOST:", process.env.BREVO_HOST);
-        console.log("PORT:", process.env.BREVO_PORT);
-        console.log("USER:", process.env.BREVO_USER);
-        console.log("KEY EXISTS:", !!process.env.BREVO_SMTP_KEY);
-
         const transporter = nodemailer.createTransport({
-            host: process.env.BREVO_HOST,
-            port: Number(process.env.BREVO_PORT),
+            host: "smtp-relay.brevo.com",
+            port: 2525, // try 2525 instead of 587
             secure: false,
             auth: {
                 user: process.env.BREVO_USER,
                 pass: process.env.BREVO_SMTP_KEY,
             },
-            debug: true,
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 10000,
             logger: true,
+            debug: true,
         });
 
-        console.log("STEP A");
-
-        await transporter.verify();
-
-        console.log("STEP B - VERIFIED");
+        console.log("BEFORE SEND");
 
         const info = await transporter.sendMail({
-            from: "amankumar213564@gmail.com",
+            from: '"Auctify" <amankumar213564@gmail.com>',
             to: email,
             subject: "OTP Verification",
             html: `
-                <h2>Auctify OTP Verification</h2>
-                <p>Your OTP is:</p>
-                <h1>${otp}</h1>
+                <div style="font-family: Arial, sans-serif;">
+                    <h2>Auctify OTP Verification</h2>
+                    <p>Your OTP is:</p>
+                    <h1 style="letter-spacing:4px;">${otp}</h1>
+                    <p>This OTP will expire in 5 minutes.</p>
+                </div>
             `,
         });
 
-        console.log("STEP C - SENT");
-        console.log(info);
+        console.log("AFTER SEND");
+        console.log("MESSAGE ID:", info.messageId);
 
         return info;
     } catch (error) {
         console.error("EMAIL ERROR:");
         console.error(error);
-        console.error(error.message);
-        console.error(error.code);
-        console.error(error.response);
+        console.error("MESSAGE:", error.message);
+        console.error("CODE:", error.code);
+        console.error("RESPONSE:", error.response);
 
         throw error;
     }
