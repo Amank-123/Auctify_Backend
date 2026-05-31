@@ -7,6 +7,7 @@ const bidSchema = new Schema(
             ref: "Auction",
             required: true,
             index: true,
+            unique: true,
         },
 
         userId: {

@@ -6,6 +6,7 @@ const chatRoomSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Auction",
             required: true,
+            unique: true,
         },
         sellerId: {
             type: Schema.Types.ObjectId,
