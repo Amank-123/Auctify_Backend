@@ -11,20 +11,34 @@ const getUserDB = async (userId) => {
 };
 
 const updateUserDB = async (userId, payload, file) => {
-    if (file) {
-        const media = await uploadToCloudinary(file.buffer, file.mimetype);
-        if (!file.mimetype.startsWith("image"))
-            throw new ApiError(400, "Profile should be type image");
-        payload.profile = media.secure_url;
-    }
-    const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { $set: payload },
-        { returnDocument: "after", runValidators: true }
-    );
-    if (!updatedUser) throw new ApiError(404, "User not found");
+    try {
+        if (file) {
+            const media = await uploadToCloudinary(file.buffer, file.mimetype);
 
-    return updatedUser;
+            if (!file.mimetype.startsWith("image"))
+                throw new ApiError(400, "Profile should be type image");
+
+            payload.profile = media.secure_url;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: payload },
+            {
+                returnDocument: "after",
+                runValidators: true,
+            }
+        );
+
+        if (!updatedUser) throw new ApiError(404, "User not found");
+
+        return updatedUser;
+    } catch (error) {
+        console.log("UPDATE USER ERROR:");
+        console.log(error);
+
+        throw error;
+    }
 };
 
 const deleteUserDB = async (userId) => {
