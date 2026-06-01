@@ -12,4 +12,3 @@ const uploadMedia = async (req, res) => {
 };
 
 export default uploadMedia;
- 
