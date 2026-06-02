@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 export const validateData = (schema) =>
     asyncHandler((req, res, next) => {
-        console.log("REQ BODY:", req.body);
+        // console.log("REQ BODY:", req.body);
 
         // Parse address coming from FormData
         if (req.body.address) {

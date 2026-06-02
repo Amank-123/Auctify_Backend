@@ -17,8 +17,8 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
+    // console.log("BODY:", req.body);
+    // console.log("FILE:", req.file);
     const data = await updateUserDB(req.user._id, req.body, req.file);
     if (!data) throw new ApiError(500, "Unable to update user data");
 
