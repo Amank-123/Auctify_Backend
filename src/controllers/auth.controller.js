@@ -10,10 +10,18 @@ import { User } from "../models/user.model.js";
 import { verifyRefreshToken } from "../utils/jwtVerification.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const options = {
+const accessTokenOptions = {
     httpOnly: true,
     secure: true,
     sameSite: "None",
+    maxAge: 15 * 60 * 1000,
+};
+
+const refreshTokenOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -39,8 +47,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, accessTokenOptions)
+        .cookie("refreshToken", refreshToken, refreshTokenOptions)
         .json({
             success: true,
             message: "User logged in successfully",
@@ -84,8 +92,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accessToken", newAccessToken, options)
-        .cookie("refreshToken", newRefreshToken, options)
+        .cookie("accessToken", newAccessToken, accessTokenOptions)
+        .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
         .json({
             success: true,
             message: "Session updated successfully",
@@ -115,16 +123,8 @@ const oauthCallback = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
     return res
         .status(200)
-        .cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-        })
-        .cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-        })
+        .cookie("accessToken", accessToken, accessTokenOptions)
+        .cookie("refreshToken", refreshToken, refreshTokenOptions)
         .redirect(`${process.env.CLIENT_URL}/auth/success`);
 });
 
