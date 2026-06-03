@@ -20,7 +20,7 @@ const router = express.Router();
 router
     .route("/")
     .post(protect, protectedApiLimiter, validateData(bidValidator), createBid)
-    .get(protect, protectedApiLimiter, userBids);
+    .get(protect, publicApiLimiter, userBids);
 router.route("/auction/:auctionId").get(publicApiLimiter, auctionBids);
 router.route("/highest/:auctionId").get(publicApiLimiter, highestBid);
 router
