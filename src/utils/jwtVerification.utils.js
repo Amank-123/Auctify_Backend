@@ -1,19 +1,11 @@
 import jwt from "jsonwebtoken";
 
-const verifyAccessToken = function (token) {
-    try {
-        return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    } catch (error) {
-        throw error;
-    }
+const verifyAccessToken = (token) => {
+    return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 };
 
-const verifyRefreshToken = function (token) {
-    try {
-        return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
-    } catch (error) {
-        throw error;
-    }
+const verifyRefreshToken = (token) => {
+    return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 };
 
 export { verifyAccessToken, verifyRefreshToken };

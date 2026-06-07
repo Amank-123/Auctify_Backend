@@ -10,17 +10,20 @@ import { User } from "../models/user.model.js";
 import { verifyRefreshToken } from "../utils/jwtVerification.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const accessTokenOptions = {
+const cookieOptions = {
     httpOnly: true,
     secure: true,
     sameSite: "None",
+    path: "/",
+};
+
+const accessTokenOptions = {
+    ...cookieOptions,
     maxAge: 15 * 60 * 1000,
 };
 
 const refreshTokenOptions = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
+    ...cookieOptions,
     maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
@@ -37,8 +40,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    if (!email && !password)
+
+    if (!email || !password) {
         throw new ApiError(400, "Email and password are required");
+    }
 
     const { user, accessToken, refreshToken } = await loginUserDB(
         email,
@@ -73,22 +78,24 @@ const resetForgottenPassword = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const token = req.cookies.refreshToken;
-    if (!token) throw new ApiError(401, "Unauthroized! Token not found");
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+        throw new ApiError(401, "NO_REFRESH_TOKEN");
+    }
 
     const decoded = verifyRefreshToken(token);
 
     const user = await User.findById(decoded._id).select("+refreshToken");
-    if (!user || user.refreshToken !== token)
-        throw new ApiError(401, "Invalid Refresh Token");
+    if (!user || user.refreshToken !== token) {
+        throw new ApiError(401, "INVALID_REFRESH_TOKEN");
+    }
 
     const newAccessToken = user.generateAccessToken();
     const newRefreshToken = user.generateRefreshToken();
 
     user.refreshToken = newRefreshToken;
     await user.save({ validateBeforeSave: false });
-
-    // console.log("New Access token: ", newAccessToken);
 
     return res
         .status(200)
@@ -101,12 +108,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(req.user._id, { $set: { refreshToken: "" } });
+    if (req.user?._id) {
+        await User.findByIdAndUpdate(req.user._id, {
+            $set: { refreshToken: "" },
+        });
+    }
 
     return res
         .status(200)
-        .clearCookie("accessToken")
-        .clearCookie("refreshToken")
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
         .json({
             success: true,
             message: "User logged out successfully",
@@ -119,8 +130,10 @@ const oauthCallback = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
+
     return res
         .status(200)
         .cookie("accessToken", accessToken, accessTokenOptions)
