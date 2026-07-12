@@ -5,7 +5,7 @@ import { endAuctionDB, startAuctionDB } from "../services/auction.service.js";
 import { RedisClient } from "../config/redis.js";
 import { workerIO } from "./worker.socket.js";
 
-const PORT = process.env.PORT || 5001;
+const WORKER_PORT = process.env.WORKER_PORT || 3000;
 
 const healthServer = http.createServer((req, res) => {
     if (req.url === "/health" && req.method === "GET") {
